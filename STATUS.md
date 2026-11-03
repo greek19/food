@@ -44,6 +44,7 @@ GitHub Pages previsto: [greek19.github.io/food](https://greek19.github.io/food/)
 - Aggiunta [`supabase/migrations/002_food_core.sql`](supabase/migrations/002_food_core.sql) per tabelle, indici, colonna `recipes.servings` e policy RLS condivise.
 - Lint e build verificati dopo l'implementazione.
 - Normalizzazione difensiva dell'URL Supabase: eventuali suffissi `/rest/v1`, `/auth/v1` o `/storage/v1` vengono rimossi prima di creare il client.
+- Aggiunta `supabase/migrations/003_authenticated_grants.sql` per i privilegi espliciti del ruolo `authenticated`; RLS resta attivo e vincolante.
 
 ## Prossima fase suggerita
 

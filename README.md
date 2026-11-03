@@ -92,4 +92,4 @@ Passaggio manuale iniziale: nel repository GitHub apri **Settings → Pages**, i
 
 ## Funzionalità dati
 
-Con Supabase configurato, lo spazio supporta ricette condivise, profili nutrizionali distinti, generazione deterministica di pranzo/cena, porzioni modificabili e lista della spesa aggregata. Dopo aver eseguito `schema.sql` e la migrazione `002_food_core.sql`, crea almeno un utente Email/Password e prova il flusso login → CRUD ricetta → profilo → genera piano → spunta spesa.
+Con Supabase configurato, lo spazio supporta ricette condivise, profili nutrizionali distinti, generazione deterministica di pranzo/cena, porzioni modificabili e lista della spesa aggregata. Dopo aver eseguito `schema.sql`, le migrazioni `002_food_core.sql` e `003_authenticated_grants.sql`, crea almeno un utente Email/Password e prova il flusso login → CRUD ricetta → profilo → genera piano → spunta spesa.
