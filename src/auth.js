@@ -1,5 +1,6 @@
+import { createClient } from "@supabase/supabase-js";
+
 const DEMO_SESSION_KEY = "food.demo.session";
-const SUPABASE_IMPORT_URL = "https://esm.sh/@supabase/supabase-js@2";
 
 function hasSupabaseConfig(config) {
   return Boolean(config?.url?.trim() && config?.anonKey?.trim());
@@ -25,30 +26,16 @@ function mapSupabaseSession(session) {
 
 export function createFoodAuth(config = {}) {
   const supabaseEnabled = hasSupabaseConfig(config);
-  let clientPromise;
-
-  async function getClient() {
-    if (!supabaseEnabled) return null;
-    if (!clientPromise) {
-      clientPromise = import(SUPABASE_IMPORT_URL).then(({ createClient }) => createClient(config.url.trim(), config.anonKey.trim()));
-    }
-    return clientPromise;
-  }
+  const client = supabaseEnabled ? createClient(config.url.trim(), config.anonKey.trim()) : null;
 
   async function getSession() {
-    const client = await getClient();
     if (client) {
       const { data, error } = await client.auth.getSession();
       if (error) throw error;
       if (data.session) return mapSupabaseSession(data.session);
-      // A user can still choose the local demo even when Supabase is configured.
-      return localStorage.getItem(DEMO_SESSION_KEY) === "active"
-        ? { source: "demo", user: demoUser() }
-        : null;
     }
 
-    // Keep the phase-1 UI immediately usable without inventing a backend account.
-    if (localStorage.getItem(DEMO_SESSION_KEY) === null) localStorage.setItem(DEMO_SESSION_KEY, "active");
+    if (localStorage.getItem(DEMO_SESSION_KEY) === null && !client) localStorage.setItem(DEMO_SESSION_KEY, "active");
     return localStorage.getItem(DEMO_SESSION_KEY) === "active"
       ? { source: "demo", user: demoUser() }
       : null;
@@ -56,13 +43,11 @@ export function createFoodAuth(config = {}) {
 
   async function signIn(email, password) {
     if (!email || !password) throw new Error("Inserisci email e password.");
-    const client = await getClient();
     if (client) {
       const { data, error } = await client.auth.signInWithPassword({ email, password });
       if (error) throw error;
       return mapSupabaseSession(data.session);
     }
-
     localStorage.setItem(DEMO_SESSION_KEY, "active");
     return { source: "demo", user: { ...demoUser(), email } };
   }
@@ -73,7 +58,6 @@ export function createFoodAuth(config = {}) {
   }
 
   async function signOut() {
-    const client = await getClient();
     if (client) {
       const { error } = await client.auth.signOut();
       if (error) throw error;

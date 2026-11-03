@@ -8,23 +8,25 @@ Fondamenta UI per il portale privato dedicato a ricette, profili nutrizionali, p
 
 ## Avvio locale
 
-Il progetto è una pagina statica buildless, quindi non richiede installazione di dipendenze.
+Il progetto usa React + Vite. Richiede Node.js 20+ e pnpm.
 
 ```powershell
-python -m http.server 4173
+pnpm install
+pnpm dev
 ```
 
-Apri poi [http://localhost:4173](http://localhost:4173). In alternativa è possibile aprire direttamente `index.html`, ma il server locale riproduce meglio il comportamento previsto su GitHub Pages.
+Apri poi l'URL mostrato da Vite, normalmente [http://localhost:5173](http://localhost:5173).
 
 ## Struttura
 
-- `index.html` — shell dell’app e markup delle cinque sezioni.
+- `src/App.jsx` — componenti React per shell, dashboard, ricette, piano, lista e impostazioni.
+- `src/main.jsx` — bootstrap React e caricamento runtime config.
+- `src/config.js` — caricamento opzionale della configurazione Supabase locale.
 - `styles.css` — tokens visivi, layout responsive, componenti e stati.
-- `app.js` — routing client-side, interazioni demo, autenticazione e protezione logica delle sezioni.
-- `auth.js` — adapter demo locale oppure Supabase Auth via import ESM opzionale.
-- `supabase-config.local.example.js` — esempio copiabile per la configurazione locale, senza valori reali.
-- `supabase-config.local.js` — override locale ignorato da git; contiene solo valori pubblici inseriti dall'utente.
-- `supabase-config.js` — risoluzione della configurazione runtime senza credenziali nel repository.
+- `src/auth.js` — adapter demo locale oppure Supabase Auth tramite `@supabase/supabase-js`.
+- `.env.example` — esempio copiabile per la configurazione locale, senza valori reali.
+- `.env.local` — override locale ignorato da git; contiene solo valori pubblici inseriti dall'utente.
+- `public/supabase-config.js` — risoluzione della configurazione runtime senza credenziali nel repository.
 - `supabase/schema.sql` — schema iniziale con profili, spazi condivisi, membri, profili nutrizionali, ricette e RLS.
 - `STATUS.md` — stato della fase e roadmap per la prossima iterazione.
 
@@ -44,17 +46,17 @@ Per collegare localmente un progetto Supabase reale:
 
 1. Crea un progetto su Supabase e abilita Email/Password in Authentication.
 2. Esegui [`supabase/schema.sql`](supabase/schema.sql) nell'SQL Editor.
-3. Copia `supabase-config.local.example.js` in `supabase-config.local.js`:
+3. Copia `.env.example` in `.env.local`:
 
    ```powershell
-   Copy-Item supabase-config.local.example.js supabase-config.local.js
+   Copy-Item .env.example .env.local
    ```
 
-4. Inserisci in `supabase-config.local.js` i due valori pubblici di Supabase Project Settings → API:
-   - `SUPABASE_URL`: URL del progetto;
-   - `SUPABASE_PUBLISHABLE_KEY`: Publishable key (oppure `SUPABASE_ANON_KEY` nei progetti che usano ancora quel nome).
+4. Inserisci in `.env.local` i due valori pubblici di Supabase Project Settings → API:
+   - `VITE_SUPABASE_URL`: URL del progetto;
+   - `VITE_SUPABASE_PUBLISHABLE_KEY`: Publishable key (oppure `VITE_SUPABASE_ANON_KEY` nei progetti che usano ancora quel nome).
 
-   Il file locale viene caricato automaticamente prima di `supabase-config.js` e non è versionato.
+   Vite carica automaticamente `.env.local`; il file non è versionato e non viene copiato in `dist/`.
 5. Non usare mai `service_role`, password o altri segreti nel frontend o nel repository.
 
 Esempio di configurazione runtime (da fornire al processo di build/hosting, non da committare con valori reali):
@@ -70,16 +72,16 @@ Esempio di configurazione runtime (da fornire al processo di build/hosting, non 
 
 Per verificare login/logout dopo la configurazione:
 
-1. Avvia `python -m http.server 4173` e apri `http://localhost:4173`.
+1. Avvia `pnpm dev` e apri l'URL locale mostrato da Vite.
 2. Controlla che il badge mostri “Supabase configurato”.
 3. Usa un utente Email/Password già creato nel progetto Supabase e verifica l'accesso.
 4. Premi l'icona di uscita nel profilo laterale: le viste diventano protette e compare la schermata login.
 5. Accedi di nuovo oppure usa “Continua senza account” per verificare il fallback demo.
 
-Su GitHub Pages `supabase-config.local.js` non viene incluso perché ignorato da git. Per una build reale, inietta `window.__FOOD_RUNTIME_CONFIG__` prima dei due script oppure prepara un passaggio di build che generi il file senza committarlo. Senza configurazione Supabase l'app resta in demo e non effettua chiamate di rete per l'autenticazione.
+Su GitHub Pages `.env.local` non viene incluso perché ignorato da git e non finisce in `dist/`. Per una build reale, configura le variabili `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` come variabili/segreti del workflow, oppure usa `public/supabase-config.js` per un'iniezione runtime controllata. Senza configurazione Supabase l'app resta in demo e non effettua chiamate di rete per l'autenticazione.
 
 ## Pubblicazione GitHub Pages
 
-Il workflow [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) pubblica automaticamente la root statica su GitHub Pages a ogni push su `main`.
+Il workflow [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) installa le dipendenze, esegue lint/build e pubblica `dist/` su GitHub Pages a ogni push su `main`.
 
 Passaggio manuale iniziale: nel repository GitHub apri **Settings → Pages**, imposta **Source: GitHub Actions**, poi esegui il workflow dal tab **Actions** oppure fai un push su `main`. La configurazione Supabase locale resta esclusa dal repository; il deploy partirà quindi in modalità demo finché non verrà aggiunta una configurazione runtime pubblica tramite un futuro build step.

@@ -10,23 +10,31 @@ GitHub Pages previsto: [greek19.github.io/food](https://greek19.github.io/food/)
 - Navigazione funzionante tra Dashboard, Ricette, Piano settimanale, Lista della spesa e Impostazioni.
 - Dati demo realistici per ricette, macronutrienti, piano giornaliero e componenti condivisi.
 - Interazioni demo: ricerca visiva, filtri, preferiti, checkbox lista, toggle impostazioni, modal nuova ricetta, toast e menu mobile.
-- UI buildless, pronta per essere pubblicata come sito statico su GitHub Pages.
+- UI statica, ora migrata a React + Vite e pronta per essere pubblicata come sito statico su GitHub Pages.
 
 ## Fase 2 completata (base autenticazione e dati)
 
 - Aggiunta schermata login/logout con stato sessione visibile nell'interfaccia.
 - Aggiunta modalità demo locale persistita in `localStorage`, senza account inventati o chiamate backend.
-- Aggiunta adapter Supabase opzionale con import remoto solo quando URL e anon key sono configurati.
+- Aggiunta adapter Supabase opzionale tramite `@supabase/supabase-js`, attivo solo quando URL e anon key sono configurati.
 - Aggiunta protezione logica delle sezioni: senza sessione la navigazione torna alla schermata di accesso.
 - Aggiunto modello SQL con `profiles`, `spaces`, `space_members`, `nutrition_profiles`, `recipes` e policy RLS.
-- Aggiunto `supabase-config.local.example.js` e override locale ignorato `supabase-config.local.js` per URL e Publishable/anon key.
+- Aggiunto `.env.example` e override locale ignorato `.env.local` per URL e Publishable/anon key.
 - Documentata la verifica manuale di login/logout con un progetto Supabase configurato dall'utente.
 - Aggiunto workflow GitHub Actions per pubblicazione statica su GitHub Pages.
 - Nessun segreto o credenziale reale inserito nel progetto.
 
+## Migrazione React + Vite completata
+
+- Scelto React + Vite come stack leggero e gratuito, compatibile con GitHub Pages.
+- UI della fase 1 portata in componenti React mantenendo classi CSS, dati demo e interazioni principali.
+- Auth Supabase/demo spostata in `src/auth.js`; runtime config gestita da `.env.local` o dal fallback pubblico in `public/`.
+- Workflow aggiornato per `pnpm install`, lint, build e pubblicazione di `dist/`.
+- Lint e build locale verificati con successo; deploy ancora sospeso su richiesta dell'utente.
+
 ## Prossima fase suggerita
 
-1. Inserire localmente URL e Publishable/anon key in `supabase-config.local.js` senza committarli.
+1. Inserire localmente URL e Publishable/anon key in `.env.local` senza committarli.
 2. Creare il progetto Supabase, eseguire [`supabase/schema.sql`](supabase/schema.sql) e verificare le policy RLS con due utenti di test.
 3. Collegare la dashboard a query reali per profilo nutrizionale, ricette, pasti e lista della spesa.
 4. Aggiungere onboarding per creazione spazio e invito di un secondo membro.
@@ -35,12 +43,12 @@ GitHub Pages previsto: [greek19.github.io/food](https://greek19.github.io/food/)
 
 ## Punto di ripresa esatto
 
-Partire da `supabase-config.local.js`, `auth.js` e `supabase/schema.sql`: inserire localmente URL/Publishable key, eseguire lo schema su un progetto Supabase di test, verificare login/logout e sostituire progressivamente i dati statici di `index.html` con query autorizzate da RLS.
+Partire da `.env.local`, `src/auth.js` e `supabase/schema.sql`: inserire localmente URL/Publishable key, eseguire lo schema su un progetto Supabase di test, verificare login/logout e sostituire progressivamente i dati statici dei componenti React con query autorizzate da RLS.
 
 ## Limiti attuali
 
 - Nessun progetto Supabase reale è collegato: mancano URL, anon key e consenso/configurazione del progetto.
-- `supabase-config.local.js` contiene ancora valori vuoti di esempio.
+- `.env.local` contiene ancora valori vuoti di esempio.
 - Il backend adapter usa ancora dati statici per dashboard, piano e lista della spesa.
 - Il calendario e i dati nutrizionali sono statici e dimostrativi.
 - Le foto arrivano da Unsplash via URL remoto.
