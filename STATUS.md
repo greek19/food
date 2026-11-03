@@ -14,8 +14,8 @@ The core application is deployed to [GitHub Pages](https://greek19.github.io/foo
 
 ## Verification
 
-- 13 application tests.
-- 12 Chromium browser tests across desktop and emulated mobile layouts.
+- 15 application tests.
+- 14 Chromium browser tests across desktop and emulated mobile layouts, including language switching and persistence.
 - Local SQL policy tests using actual migrations and simulated Storage metadata.
 - Live, read-only two-account checks: matching recipes, profiles, plans, meals, shopping rows,
   and preferences; anonymous shared-data access denied.
@@ -28,9 +28,11 @@ These are a verification snapshot, not fixed requirements.
 
 ## Current language update
 
-The interface, documentation, demo fixtures, tests, and source messages are being standardized on English.
-Migration 012 updates existing server-function messages without translating household content.
-Existing recipe titles, ingredients, profile names, and space names are preserved.
+The interface defaults to English and supports an optional Italian translation selected in the top bar
+or sign-in screen. The preference persists on the device and survives logout. Language changes preserve
+form state and update the document language, dates, messages, and accessibility labels.
+Repository documentation and diagnostics remain English. Migration 012 has been applied and its English
+validation messages verified remotely. Existing recipe titles, ingredients, profile names, and space names are preserved.
 
 ## Remaining limits
 

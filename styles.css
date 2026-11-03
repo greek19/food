@@ -315,3 +315,9 @@ button:disabled { opacity:.5; cursor:not-allowed; }
  .recipe-photo-field > small { display:block; color:var(--muted); font-size:10px; line-height:1.5; margin-bottom:12px; }
  .recipe-photo-field input[type=file] { background:var(--surface); padding:12px; }
  .photo-error { color:#a53f29 !important; background:#fff1eb; padding:12px; border-radius:10px; }
+ .language-selector { display:inline-flex; align-items:center; }
+ .language-selector-label { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+ .language-selector select { max-width:110px; height:34px; padding:0 9px; border:1px solid var(--line); border-radius:10px; background:var(--surface); color:var(--green); font:500 11px "DM Sans",sans-serif; cursor:pointer; }
+ .language-selector select:focus-visible { outline:2px solid #759b70; outline-offset:2px; }
+ .auth-language { display:flex; justify-content:flex-end; margin-bottom:18px; }
+ @media(max-width:540px) { .topbar-actions .account-state, .topbar-actions .notification-button { display:none; } .topbar-actions { gap:6px; } .language-selector select { max-width:95px; } }

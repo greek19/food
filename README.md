@@ -17,7 +17,12 @@ Repository: [github.com/greek19/food](https://github.com/greek19/food)
 - Shared optional breakfast and snack settings.
 - Local demo mode during development only; production requires configured Supabase authentication.
 
-The application, source comments, documentation, and test output use English. Existing household content is not translated automatically.
+English is the default application language. Use the **Language** selector in the top bar or sign-in screen
+to switch to **Italiano**. The choice is saved on the current device and also applies to dates and messages.
+Switching languages preserves the current page and unsaved form state. Recipe titles, ingredients, profile
+names, and other household content are not translated automatically.
+Source comments, documentation, and test output remain in English; Italian interface messages live in
+the explicit translation catalog at `src/translations.js`. No database migration is needed to change the interface language.
 
 ## Local development
 
@@ -113,6 +118,7 @@ It accepts `window.__FOOD_RUNTIME_CONFIG__` with public `SUPABASE_URL` and
 - `src/diets.js`: explicit diet compatibility.
 - `src/RecipePhotoField.jsx` and `src/photos.js`: upload UI and file validation.
 - `styles.css`: shared visual tokens and responsive components.
+- `src/i18n.js`, `src/translations.js`, and `src/LanguageSelector.jsx`: language persistence, Italian messages, and selection UI.
 - `supabase/`: schema, grants, policies, and migrations.
 - `e2e/`: isolated desktop/mobile browser tests.
 - `integration/`: local policy tests and opt-in live checks.

@@ -10,6 +10,8 @@ Each test gets an isolated browser context.
 Coverage includes the calendar, generation, keyboard recipe search, individual portions,
 persistence after reload, balancing proposals and saves, internal modal scrolling, Escape and focus return,
 optional meals, logout, malformed/duplicate JSON, shopping checks, and photo validation/preview/persistence.
+Language checks verify the English default, Italian UI and validation labels, preserved unsaved portions,
+unchanged recipe content, persistence through reload/logout, and switching back to English at sign-in.
 
 Planner screenshots and failure traces are written to `test-results/`, which Git ignores.
 

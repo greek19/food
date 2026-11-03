@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 async function navigate(page, name) {
-  const menu = page.getByRole('button', { name: 'Open menu' });
+  const menu = page.getByRole('button', { name: /Open menu|Apri menu/ });
   if (await menu.isVisible()) await menu.click();
   await page.locator('.sidebar').getByRole('button', { name, exact: false }).click();
 }
@@ -112,4 +112,35 @@ test('recipe photo validates files, previews and persists after save', async ({ 
   await navigate(page, 'Recipes');
   await page.getByRole('heading', { name:'E2E photo', exact:true }).click();
   await expect(page.getByRole('dialog').locator('.recipe-detail-image')).toHaveAttribute('style', /data:image\/png/);
+});
+
+test('language switches without losing edits and persists through reload and logout', async ({ page }, testInfo) => {
+  await expect(page.locator('html')).toHaveAttribute('lang','en');
+  await expect(page.getByRole('combobox',{name:'Language'})).toHaveValue('en');
+  await navigate(page,'Weekly plan');
+  const portion=page.locator('.meal-editor').first().getByRole('spinbutton').first();
+  await portion.fill('1.75');
+  await page.getByRole('combobox',{name:'Language'}).selectOption('it');
+  await expect(page.getByRole('heading',{name:'Piano settimanale',exact:true})).toBeVisible();
+  await expect(portion).toHaveValue('1.75');
+  await expect(page.getByLabel('Settimana del')).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('lang','it');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBeTruthy();
+  await page.screenshot({path:testInfo.outputPath('planner-italian.png'),fullPage:true});
+  await page.reload();
+  await expect(page.getByRole('heading',{name:'Buongiorno, Greco'})).toBeVisible();
+  await expect(page.getByRole('combobox',{name:'Lingua'})).toHaveValue('it');
+  await navigate(page,'Ricette');
+  await expect(page.getByRole('heading',{name:'Zucchini carbonara'})).toBeVisible();
+  await page.getByRole('button',{name:/Nuova ricetta/}).click();
+  const dialog=page.getByRole('dialog');
+  await expect(dialog.getByLabel('Calorie per porzione',{exact:false})).toBeVisible();
+  await dialog.getByLabel('Scegli una foto dal dispositivo').setInputFiles({name:'invalid.txt',mimeType:'text/plain',buffer:Buffer.from('invalid')});
+  await expect(dialog.getByRole('alert')).toContainText('Scegli una foto');
+  await page.keyboard.press('Escape');
+  await navigate(page,'Impostazioni');
+  await page.locator('.settings-logout').click();
+  await expect(page.getByRole('heading',{name:'Bentornati a tavola.'})).toBeVisible();
+  await page.getByRole('combobox',{name:'Lingua'}).selectOption('en');
+  await expect(page.getByRole('heading',{name:'Welcome back to the table.'})).toBeVisible();
 });

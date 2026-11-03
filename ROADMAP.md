@@ -13,9 +13,9 @@
 
 ## Current work
 
-Standardize the application, repository documentation, demo data, and diagnostics on English.
-Apply migration 012 to translate messages in previously installed database functions.
-Existing household content and identifiers are not translated.
+English standardization and migration 012 are complete. The interface now offers English (default)
+and Italian with a device-local preference, without changing household content or identifiers.
+Language switching is covered by unit tests and desktop/mobile browser tests. No additional SQL migration is required.
 
 ## Next steps
 

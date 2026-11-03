@@ -194,7 +194,7 @@ export function parseRecipeImport(text) {
     records = Array.isArray(parsed) ? parsed : parsed?.recipes;
     if (!Array.isArray(records)) throw new Error("JSON must be an array or an object with a recipes property.");
   } catch (error) {
-    return { recipes: [], errors: [error.message || "Invalid JSON."] };
+    return { recipes: [], errors: [error instanceof SyntaxError ? "Invalid JSON." : error.message || "Invalid JSON."] };
   }
   const recipes = records.map((record, index) => {
     const rowNumber = index + 1;

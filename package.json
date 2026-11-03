@@ -4,7 +4,7 @@
   "version": "0.3.0",
   "type": "module",
   "scripts": {
-    "test": "node --test src/planner.test.js integration/photos.test.mjs",
+    "test": "node --test src/planner.test.js integration/photos.test.mjs integration/i18n.test.mjs",
     "test:e2e": "playwright test",
     "test:rls": "node --test integration/rls.test.mjs",
     "test:remote": "node --env-file=.env.supabase-test.local integration/supabase-readonly.mjs",
