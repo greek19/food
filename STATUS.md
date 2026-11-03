@@ -1,5 +1,7 @@
 # FOOD — stato progetto
 
+Aggiornamento 3 novembre 2026: Supabase e due utenti sono operativi, verificati dall'utente. Migrazione 006 applicata. La roadmap corrente è in [ROADMAP.md](ROADMAP.md); le vecchie note di configurazione e i limiti riportati più sotto descrivono lo stato precedente.
+
 Repository: [github.com/greek19/food](https://github.com/greek19/food)
 
 GitHub Pages previsto: [greek19.github.io/food](https://greek19.github.io/food/)

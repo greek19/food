@@ -122,7 +122,7 @@ const demoPeople = [
   { id: "person-martina", display_name: "Martina", goal: "Energia e benessere", calorie_target: 1800, protein_target_g: 90, carbs_target_g: 220, fat_target_g: 60, dietary_preferences: "Onnivora · Poco piccante" },
 ];
 
-function isoDate(date) { return date.toISOString().slice(0, 10); }
+function isoDate(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`; }
 function mondayOf(date = new Date()) { const result = new Date(date); const day = (result.getDay() + 6) % 7; result.setDate(result.getDate() - day); result.setHours(0, 0, 0, 0); return isoDate(result); }
 function stableSeed(value) { return [...value].reduce((total, char) => total + char.charCodeAt(0), 0); }
 function normalizeIngredient(value) { return value.trim().toLocaleLowerCase("it-IT").replace(/\s+/g, " "); }
@@ -248,22 +248,23 @@ export function createFoodData({ auth }) {
     return spaceIdPromise;
   }
 
-  async function loadAll() {
+  async function loadAll(weekStart = mondayOf()) {
     if (!remote) {
       const store = readDemoStore();
       const previous = new Map((store.shopping ?? []).map((item) => [item.id, item.checked]));
-      const shopping = makeShopping(store.plan, store.recipes).map((item) => ({ ...item, checked: previous.get(item.id) ?? false }));
-      return { ...store, shopping };
+      const plan = store.plan.filter((item) => item.week_start === weekStart).map((item) => ({ ...item, recipe: store.recipes.find((recipe) => recipe.id === item.recipe_id) }));
+      const shopping = makeShopping(plan, store.recipes).map((item) => ({ ...item, checked: previous.get(item.id) ?? false }));
+      return { ...store, plan, shopping };
     }
     const spaceId = await getSpaceId();
     const [recipeResult, peopleResult, planResult] = await Promise.all([
       client.from("recipes").select("*").eq("space_id", spaceId).order("created_at", { ascending: false }),
       client.from("household_profiles").select("*").eq("space_id", spaceId).eq("is_active", true).order("created_at"),
-      client.from("meal_plan_items").select("*, recipe:recipes(*) , meal_plan:meal_plans!inner(*)").eq("meal_plan.space_id", spaceId).eq("meal_plan.week_start", mondayOf()).order("day_of_week"),
+      client.from("meal_plan_items").select("*, recipe:recipes(*) , meal_plan:meal_plans!inner(*)").eq("meal_plan.space_id", spaceId).eq("meal_plan.week_start", weekStart).order("day_of_week"),
     ]);
     [recipeResult, peopleResult, planResult].forEach((result) => { if (result.error) throw result.error; });
     const recipeList = recipeResult.data.map(mapRecipe);
-    const plan = planResult.data.map((row) => ({ ...row, recipe: row.recipe ? mapRecipe(row.recipe) : null }));
+    const plan = planResult.data.map((row) => ({ ...row, week_start: weekStart, recipe: row.recipe ? mapRecipe(row.recipe) : null }));
     const mealPlanId = planResult.data?.[0]?.meal_plan?.id;
     const shoppingResult = mealPlanId ? await client.from("shopping_items").select("*").eq("meal_plan_id", mealPlanId).order("category").order("name") : { data: [] };
     if (shoppingResult.error) throw shoppingResult.error;
@@ -306,7 +307,8 @@ export function createFoodData({ auth }) {
     return result.data;
   }
 
-  async function savePlanItem(item) {
+  async function savePlanItem(item, syncShopping = true) {
+    if (!item.recipe_id || !Number.isFinite(Number(item.servings)) || Number(item.servings) <= 0) throw new Error("Scegli una ricetta e un numero di porzioni valido.");
     if (!remote) { const store = readDemoStore(); const index = store.plan.findIndex((entry) => entry.id === item.id); index >= 0 ? store.plan.splice(index, 1, item) : store.plan.push(item); const previous = new Map((store.shopping ?? []).map((saved) => [saved.id, saved.checked])); store.shopping = makeShopping(store.plan, store.recipes).map((shopping) => ({ ...shopping, checked: previous.get(shopping.id) ?? false })); writeDemoStore(store); return item; }
     const spaceId = await getSpaceId();
     let plan = await client.from("meal_plans").select("id").eq("space_id", spaceId).eq("week_start", item.week_start).maybeSingle();
@@ -319,14 +321,20 @@ export function createFoodData({ auth }) {
     const payload = { meal_plan_id: plan.data.id, recipe_id: item.recipe_id, day_of_week: item.day_of_week, meal_type: item.meal_type, servings: item.servings, notes: item.notes ?? "" };
     const result = await client.from("meal_plan_items").upsert(payload, { onConflict: "meal_plan_id,day_of_week,meal_type" }).select().single();
     if (result.error) throw result.error;
+    if (syncShopping) {
+      const loaded = await loadAll(item.week_start);
+      await persistRemoteShopping(loaded.plan, loaded.recipes, item.week_start);
+    }
     return result.data;
   }
 
-  async function generatePlan(weekStart = mondayOf(), recipeList, people) {
+  async function generatePlan(weekStart = mondayOf(), recipeList, people, meals = ["lunch", "dinner"]) {
     if (!recipeList?.length) throw new Error("Aggiungi almeno una ricetta prima di generare il piano.");
-    const generated = makeDemoPlan(recipeList, weekStart).map((item) => ({ ...item, servings: Math.max(1, people.length) }));
-    if (!remote) { const store = readDemoStore(); const previous = new Map((store.shopping ?? []).map((saved) => [saved.id, saved.checked])); store.plan = generated; store.shopping = makeShopping(generated, recipeList).map((shopping) => ({ ...shopping, checked: previous.get(shopping.id) ?? false })); writeDemoStore(store); return generated; }
-    for (const item of generated) await savePlanItem(item);
+    const existing = await loadAll(weekStart);
+    if (existing.plan.length) throw new Error("Questa settimana ha già un piano. Modifica i singoli pasti.");
+    const generated = buildPersonalPlan(recipeList, people, weekStart, meals);
+    if (!remote) { const store = readDemoStore(); store.plan.push(...generated); store.shopping = makeShopping(generated, recipeList); writeDemoStore(store); return generated; }
+    for (const item of generated) await savePlanItem(item, false);
     await persistRemoteShopping(generated, recipeList, weekStart);
     return generated;
   }
@@ -336,7 +344,10 @@ export function createFoodData({ auth }) {
     const spaceId = await getSpaceId();
     const planResult = await client.from("meal_plans").select("id").eq("space_id", spaceId).eq("week_start", weekStart).single();
     if (planResult.error) throw planResult.error;
-    const items = makeShopping(plan, recipeList).map(({ id: _demoId, ...item }) => ({ ...item, space_id: spaceId, meal_plan_id: planResult.data.id }));
+    const previous = await client.from("shopping_items").select("ingredient_key,checked").eq("meal_plan_id", planResult.data.id);
+    if (previous.error) throw previous.error;
+    const checks = new Map(previous.data.map((item) => [item.ingredient_key, item.checked]));
+    const items = makeShopping(plan, recipeList).map(({ id: _demoId, ...item }) => ({ ...item, checked: checks.get(item.ingredient_key) ?? false, space_id: spaceId, meal_plan_id: planResult.data.id }));
     const remove = await client.from("shopping_items").delete().eq("meal_plan_id", planResult.data.id);
     if (remove.error) throw remove.error;
     if (!items.length) return;
@@ -357,7 +368,7 @@ export function calculatePlanNutrition(plan, people = []) {
   const totals = plan.reduce((accumulator, item) => {
     const recipe = item.recipe;
     if (!recipe) return accumulator;
-    const scale = Number(item.servings ?? 1) / Number(recipe.servings ?? 1);
+    const scale = Number(item.servings ?? 1);
     accumulator.calories += Number(recipe.calories ?? 0) * scale;
     accumulator.protein += Number(recipe.protein_g ?? 0) * scale;
     accumulator.carbs += Number(recipe.carbs_g ?? 0) * scale;
@@ -366,6 +377,39 @@ export function calculatePlanNutrition(plan, people = []) {
   }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
   const divisor = Math.max(1, people.length);
   return { ...totals, perPerson: { calories: totals.calories / divisor, protein: totals.protein / divisor, carbs: totals.carbs / divisor, fat: totals.fat / divisor } };
+}
+
+export function personPortions(item, people) {
+  try { const parsed = JSON.parse(item.notes || "{}"); if (parsed.portions) return parsed.portions; } catch { /* Legacy free-text notes. */ }
+  return Object.fromEntries(people.map((person) => [person.id, Number(item.servings || 1) / Math.max(1, people.length)]));
+}
+
+export function compatibleRecipe(recipe, people) {
+  const ingredients = (recipe.ingredients ?? []).map((item) => normalizeIngredient(item.name)).join(" ");
+  return people.every((person) => {
+    const excluded = String(person.excluded_foods ?? "").split(",").map((item) => normalizeIngredient(item)).filter(Boolean);
+    return excluded.every((term) => !ingredients.includes(term));
+  });
+}
+
+export function buildPersonalPlan(recipes, people, weekStart, meals) {
+  const weights = { breakfast: 0.2, lunch: 0.35, dinner: 0.35, snack: 0.1 };
+  return Array.from({ length: 7 }, (_, day) => meals.map((mealType) => {
+    const candidates = recipes.filter((recipe) => recipeMealTypes(recipe).includes(mealType) && compatibleRecipe(recipe, people) && Number(recipe.calories) > 0);
+    if (!candidates.length) throw new Error(`Nessuna ricetta compatibile per ${mealType}. Controlla ricette ed esclusioni.`);
+    // Compare protein/carbohydrate/fat density at each person's calorie target.
+    const ranked = candidates.map((recipe) => ({ recipe, score: people.reduce((score, person) => {
+      const portions = Number(person.calorie_target) * weights[mealType] / recipe.calories;
+      return score + [["protein_g", "protein_target_g"], ["carbs_g", "carbs_target_g"], ["fat_g", "fat_target_g"]].reduce((sum, [macro, target]) => {
+        const goal = Number(person[target] || 0) * weights[mealType];
+        return sum + (goal ? Math.abs(Number(recipe[macro] || 0) * portions - goal) / goal : 0);
+      }, 0);
+    }, 0) })).sort((a, b) => a.score - b.score);
+    const best = ranked.slice(0, Math.min(3, ranked.length));
+    const recipe = best[(stableSeed(weekStart) + day) % best.length].recipe;
+    const portions = Object.fromEntries(people.map((person) => [person.id, Math.max(0.05, Math.round(Number(person.calorie_target) * weights[mealType] / recipe.calories * 100) / 100)]));
+    return { id: `draft-${weekStart}-${day}-${mealType}`, week_start: weekStart, day_of_week: day, meal_type: mealType, recipe_id: recipe.id, recipe, servings: Object.values(portions).reduce((sum, value) => sum + value, 0) || 1, notes: JSON.stringify({ portions }) };
+  })).flat();
 }
 
 export { imageUrls, mondayOf };
