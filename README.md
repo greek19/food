@@ -38,9 +38,10 @@ Le immagini delle ricette usano URL Unsplash per mantenere il repository leggero
 
 La UI ora ha tre stati verificabili:
 
-- modalità demo locale predefinita, persistita solo in `localStorage`;
+- modalità demo locale, persistita solo in `localStorage` e consentita esclusivamente durante `vite dev`;
 - schermata di login e logout, con protezione logica delle sezioni quando non c'è sessione;
-- adapter Supabase opzionale, attivato solo quando sono presenti URL e anon/publishable key.
+- schermata di configurazione indisponibile in produzione se Supabase non è configurato;
+- adapter Supabase attivo solo quando sono presenti URL e anon/publishable key.
 
 Per collegare localmente un progetto Supabase reale:
 
@@ -76,12 +77,14 @@ Per verificare login/logout dopo la configurazione:
 2. Controlla che il badge mostri “Supabase configurato”.
 3. Usa un utente Email/Password già creato nel progetto Supabase e verifica l'accesso.
 4. Premi l'icona di uscita nel profilo laterale: le viste diventano protette e compare la schermata login.
-5. Accedi di nuovo oppure usa “Continua senza account” per verificare il fallback demo.
+5. In sviluppo locale puoi usare “Continua senza account” per verificare il fallback demo; questa opzione non viene mostrata nella build di produzione.
 
-Su GitHub Pages `.env.local` non viene incluso perché ignorato da git e non finisce in `dist/`. Per una build reale, configura le variabili `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` come variabili/segreti del workflow, oppure usa `public/supabase-config.js` per un'iniezione runtime controllata. Senza configurazione Supabase l'app resta in demo e non effettua chiamate di rete per l'autenticazione.
+Su GitHub Pages `.env.local` non viene incluso perché ignorato da git e non finisce in `dist/`. Il workflow legge le variabili pubbliche `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` dalle **Repository variables** di GitHub Actions. Se non sono impostate, la produzione resta chiusa e mostra una schermata di configurazione: non effettua auto-login demo.
+
+Per configurare GitHub: apri **Settings → Secrets and variables → Actions → Variables**, crea `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY`, poi rilancia il workflow. La Publishable/anon key è destinata al client; non usare mai `service_role`, password o secret key.
 
 ## Pubblicazione GitHub Pages
 
 Il workflow [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) installa le dipendenze, esegue lint/build e pubblica `dist/` su GitHub Pages a ogni push su `main`.
 
-Passaggio manuale iniziale: nel repository GitHub apri **Settings → Pages**, imposta **Source: GitHub Actions**, poi esegui il workflow dal tab **Actions** oppure fai un push su `main`. La configurazione Supabase locale resta esclusa dal repository; il deploy partirà quindi in modalità demo finché non verrà aggiunta una configurazione runtime pubblica tramite un futuro build step.
+Passaggio manuale iniziale: nel repository GitHub apri **Settings → Pages**, imposta **Source: GitHub Actions**, poi esegui il workflow dal tab **Actions** oppure fai un push su `main`. Senza Repository variables Supabase il deploy resta volutamente chiuso.

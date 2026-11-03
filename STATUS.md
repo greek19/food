@@ -16,6 +16,7 @@ GitHub Pages previsto: [greek19.github.io/food](https://greek19.github.io/food/)
 
 - Aggiunta schermata login/logout con stato sessione visibile nell'interfaccia.
 - Aggiunta modalità demo locale persistita in `localStorage`, senza account inventati o chiamate backend.
+- La modalità demo è ora consentita solo in sviluppo locale; la produzione non fa auto-login.
 - Aggiunta adapter Supabase opzionale tramite `@supabase/supabase-js`, attivo solo quando URL e anon key sono configurati.
 - Aggiunta protezione logica delle sezioni: senza sessione la navigazione torna alla schermata di accesso.
 - Aggiunto modello SQL con `profiles`, `spaces`, `space_members`, `nutrition_profiles`, `recipes` e policy RLS.
@@ -30,6 +31,7 @@ GitHub Pages previsto: [greek19.github.io/food](https://greek19.github.io/food/)
 - UI della fase 1 portata in componenti React mantenendo classi CSS, dati demo e interazioni principali.
 - Auth Supabase/demo spostata in `src/auth.js`; runtime config gestita da `.env.local` o dal fallback pubblico in `public/`.
 - Workflow aggiornato per `npm install`, lint, build e pubblicazione di `dist/`.
+- Workflow configurato per leggere `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` dalle Repository variables GitHub Actions.
 - Lint e build locale verificati con successo; deploy ancora sospeso su richiesta dell'utente.
 
 ## Prossima fase suggerita
@@ -48,6 +50,7 @@ Partire da `.env.local`, `src/auth.js` e `supabase/schema.sql`: inserire localme
 ## Limiti attuali
 
 - Nessun progetto Supabase reale è collegato: mancano URL, anon key e consenso/configurazione del progetto.
+- Senza variabili Supabase nella build produzione mostra la schermata di configurazione indisponibile e nega l'accesso.
 - `.env.local` contiene ancora valori vuoti di esempio.
 - Il backend adapter usa ancora dati statici per dashboard, piano e lista della spesa.
 - Il calendario e i dati nutrizionali sono statici e dimostrativi.

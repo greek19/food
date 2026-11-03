@@ -46,13 +46,12 @@ function AuthScreen({ auth, onAuthenticated }) {
         <p className="eyebrow accent-eyebrow">Spazio privato condiviso</p>
         <h1 id="auth-title">Bentornati a tavola.</h1>
         <p className="auth-copy">Accedi al vostro spazio per ritrovare ricette, piano e lista della spesa.</p>
-        <div className="auth-mode"><span></span> {auth.mode === "supabase" ? "Supabase configurato" : "Modalità demo locale"}</div>
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <div className={`auth-mode${auth.mode === "unconfigured" ? " auth-mode-warning" : ""}`}><span></span> {auth.mode === "supabase" ? "Supabase configurato" : auth.mode === "demo" ? "Modalità demo locale" : "Configurazione richiesta"}</div>
+        {auth.mode === "unconfigured" ? <div className="auth-config-panel"><strong>Accesso privato non ancora configurato.</strong><p>Per pubblicare il portale devi aggiungere <code>VITE_SUPABASE_URL</code> e <code>VITE_SUPABASE_PUBLISHABLE_KEY</code> nelle variabili del repository GitHub Actions.</p></div> : <><form className="auth-form" onSubmit={handleSubmit}>
           <label>Email<input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
           <label>Password<input type="password" autoComplete="current-password" placeholder="Inserisci la password" value={password} onChange={(event) => setPassword(event.target.value)} required /></label>
           <button className="button button-dark auth-submit" type="submit">Accedi <span>→</span></button>
-        </form>
-        <button className="auth-demo-button" type="button" onClick={continueDemo}>Continua senza account <span>↗</span></button>
+        </form>{auth.mode === "demo" && <button className="auth-demo-button" type="button" onClick={continueDemo}>Continua senza account <span>↗</span></button>}</>}
         <p className={`auth-feedback${isError ? " is-error" : ""}`} role="status" aria-live="polite">{feedback}</p>
         <p className="auth-footnote">La modalità demo non invia dati e resta solo su questo dispositivo.</p>
       </div>
