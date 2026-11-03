@@ -1,0 +1,6 @@
+# Local runtime overrides may contain a public project URL/key and should not be committed by accident.
+supabase-config.local.js
+.idea/
+.env
+.env.*
+!.env.example
