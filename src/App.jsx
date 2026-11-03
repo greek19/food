@@ -117,6 +117,7 @@ export default function App({ auth }) {
   const [session, setSession] = useState(undefined); const [view, setViewState] = useState("dashboard"); const [mobileMenu, setMobileMenu] = useState(false); const [toast, setToast] = useState(""); const [dataset, setDataset] = useState(null); const [modal, setModal] = useState(null); const [saved, setSaved] = useState(new Set());
   useEffect(() => { auth.getSession().then(setSession).catch(() => setSession(null)); }, [auth]);
   useEffect(() => { if (!mobileMenu) return undefined; const closeOnEscape = (event) => { if (event.key === "Escape") setMobileMenu(false); }; document.addEventListener("keydown", closeOnEscape); return () => document.removeEventListener("keydown", closeOnEscape); }, [mobileMenu]);
+  useEffect(() => { document.body.classList.toggle("modal-open", Boolean(modal)); return () => document.body.classList.remove("modal-open"); }, [modal]);
   useEffect(() => { if (!session) { setDataset(null); return; } foodData.loadAll().then((loaded) => { setDataset(loaded); setSaved(new Set(JSON.parse(localStorage.getItem("food.saved.recipes") ?? "[]"))); }).catch((error) => { setToast(error.message || "Impossibile caricare i dati dello spazio"); setDataset({ recipes: [], people: [], plan: [], shopping: [] }); }); }, [foodData, session]);
   const showToast = (message) => { setToast(message); window.clearTimeout(showToast.timer); showToast.timer = window.setTimeout(() => setToast(""), 3000); };
   const refresh = async () => { const loaded = await foodData.loadAll(); setDataset(loaded); };
