@@ -44,6 +44,9 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Database policies and migrations
+        run: npm run test:rls
+
       - name: Install browser for E2E tests
         run: npx playwright install --with-deps chromium
 

@@ -7,4 +7,5 @@ test-results/
 playwright-report/
 .env
 .env.*
+.supabase-test-members.local.sql
 !.env.example
