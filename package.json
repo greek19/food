@@ -4,10 +4,11 @@
   "version": "0.3.0",
   "type": "module",
   "scripts": {
-    "test": "node --test src/planner.test.js",
+    "test": "node --test src/planner.test.js integration/photos.test.mjs",
     "test:e2e": "playwright test",
     "test:rls": "node --test integration/rls.test.mjs",
     "test:remote": "node --env-file=.env.supabase-test.local integration/supabase-readonly.mjs",
+    "test:storage:remote": "node --env-file=.env.supabase-test.local integration/storage-live.mjs",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",

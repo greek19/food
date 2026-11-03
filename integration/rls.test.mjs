@@ -12,6 +12,14 @@ test('actual migrations enforce shared access and space isolation', async (t) =>
       create table auth.users(id uuid primary key);
       create function auth.uid() returns uuid language sql as 'select nullif(current_setting(''request.jwt.claim.sub'', true), '''')::uuid';
       grant usage on schema public, auth to authenticated, anon;`);
+    // Minimal Storage metadata for policy checks; the real Storage HTTP service
+    // (MIME/size restrictions and signed links) is not emulated by PGlite.
+    await db.exec(`create schema storage;
+      create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+      create table storage.objects(id uuid primary key default gen_random_uuid(),bucket_id text references storage.buckets(id),name text);
+      alter table storage.objects enable row level security;
+      grant usage on schema storage to authenticated,anon;
+      grant select,insert,delete on storage.objects to authenticated;`);
     const files = ['supabase/schema.sql', ...(await readdir('supabase/migrations')).filter((name) => name.endsWith('.sql')).sort().map((name) => `supabase/migrations/${name}`)];
     for (const path of files) {
       // PGlite has gen_random_uuid built in but does not package pgcrypto.
@@ -65,6 +73,19 @@ test('actual migrations enforce shared access and space isolation', async (t) =>
       await db.exec("reset role; set role anon; select set_config('request.jwt.claim.sub','',false)");
       await assert.rejects(db.query('select * from space_preferences'));
       await assert.rejects(save(10));
+    });
+    await t.test('private photo metadata is shared with members but hidden from outsiders', async () => {
+      await db.exec('reset role;set role authenticated');
+      await user(1);
+      await db.query('insert into storage.objects(bucket_id,name) values($1,$2)',['recipe-images',`${id(10)}/photo.jpg`]);
+      await assert.rejects(db.query('insert into storage.objects(bucket_id,name) values($1,$2)',['recipe-images',`${id(20)}/blocked.jpg`]));
+      await user(2);
+      assert.equal((await db.query('select * from storage.objects')).rows.length,1);
+      await user(3);
+      assert.equal((await db.query('select * from storage.objects')).rows.length,0);
+      assert.equal((await db.query('delete from storage.objects returning id')).rows.length,0);
+      await db.exec('reset role');
+      assert.equal((await db.query("select public from storage.buckets where id='recipe-images'")).rows[0].public,false);
     });
   } finally { await db.close(); }
 });

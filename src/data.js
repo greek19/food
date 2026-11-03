@@ -1,5 +1,6 @@
 import { matchesDiet, parseDietTags } from "./diets.js";
 import { balanceDay } from "./nutrition.js";
+import { PHOTO_BUCKET, validatePhoto, demoPhoto } from "./photos.js";
 export { personPortions } from "./nutrition.js";
 
 const DEMO_STORE_KEY = "food.demo.data.v2";
@@ -271,8 +272,13 @@ export function createFoodData({ auth }) {
       loadPreferences(),
     ]);
     [recipeResult, peopleResult, planResult].forEach((result) => { if (result.error) throw result.error; });
-    const recipeList = recipeResult.data.map(mapRecipe);
-    const plan = planResult.data.map((row) => ({ ...row, week_start: weekStart, recipe: row.recipe ? mapRecipe(row.recipe) : null }));
+    const rows = [...recipeResult.data, ...planResult.data.map((row) => row.recipe).filter(Boolean)];
+    const paths = [...new Set(rows.map((row) => row.image_path).filter((path) => path?.startsWith(`${spaceId}/`)))];
+    const signed = paths.length ? await client.storage.from(PHOTO_BUCKET).createSignedUrls(paths, 86400) : { data: [] };
+    const urls = new Map((signed.data ?? []).map((item) => [item.path, item.signedUrl]));
+    const withPhoto = (row) => mapRecipe({ ...row, image_url: row.image_path ? urls.get(row.image_path) || '' : row.image_url });
+    const recipeList = recipeResult.data.map(withPhoto);
+    const plan = planResult.data.map((row) => ({ ...row, week_start: weekStart, recipe: row.recipe ? withPhoto(row.recipe) : null }));
     const mealPlanId = planResult.data?.[0]?.meal_plan?.id;
     const shoppingResult = mealPlanId ? await client.from("shopping_items").select("*").eq("meal_plan_id", mealPlanId).order("category").order("name") : { data: [] };
     if (shoppingResult.error) throw shoppingResult.error;
@@ -298,11 +304,12 @@ export function createFoodData({ auth }) {
     if (result.error) throw result.error;
   }
 
-  async function saveRecipe(recipe) {
+  async function saveRecipe(recipe, photoFile = null) {
+    if (photoFile) validatePhoto(photoFile);
     if (!remote) {
       const store = readDemoStore();
       const mealTypes = recipeMealTypes(recipe);
-      const saved = { ...recipe, meal_types: mealTypes, meal_type: mealTypes[0], id: recipe.id ?? `demo-recipe-${Date.now()}` };
+      const saved = { ...recipe, ...(photoFile ? { image_url: await demoPhoto(photoFile), image_path: null } : {}), meal_types: mealTypes, meal_type: mealTypes[0], id: recipe.id ?? `demo-recipe-${Date.now()}` };
       const index = store.recipes.findIndex((item) => item.id === saved.id);
       index >= 0 ? store.recipes.splice(index, 1, saved) : store.recipes.unshift(saved);
       writeDemoStore(store);
@@ -315,9 +322,22 @@ export function createFoodData({ auth }) {
     delete payload.mealTypes;
     delete payload.ingredientsText;
     delete payload.stepsText;
-    const result = await client.from("recipes").upsert(payload).select().single();
-    if (result.error) throw result.error;
-    return mapRecipe(result.data);
+    let uploadedPath;
+    if (photoFile) {
+      uploadedPath = `${spaceId}/${crypto.randomUUID()}.${validatePhoto(photoFile)}`;
+      const upload = await client.storage.from(PHOTO_BUCKET).upload(uploadedPath, photoFile, { contentType: photoFile.type, upsert: false });
+      if (upload.error) throw new Error('Caricamento foto non riuscito. Controlla connessione e configurazione Storage.');
+      payload.image_path = uploadedPath;
+    }
+    if (payload.image_path) payload.image_url = null;
+    try {
+      const result = await client.from("recipes").upsert(payload).select().single();
+      if (result.error) throw result.error;
+      return mapRecipe(result.data);
+    } catch (error) {
+      if (uploadedPath) await client.storage.from(PHOTO_BUCKET).remove([uploadedPath]).catch(() => {});
+      throw error;
+    }
   }
 
   async function deleteRecipe(recipeId) {

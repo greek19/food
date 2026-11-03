@@ -8,7 +8,7 @@ non usa credenziali reali e non viene inclusa nella build di produzione.
 Ogni test ha un contesto browser isolato.
 
 Copertura: calendario/settimane, generazione, autocomplete con tastiera, quantità individuali,
-persistenza dopo reload, proposta e salvataggio del bilanciamento, overflow modale,
+persistenza dopo reload, proposta e salvataggio del bilanciamento, upload foto con anteprima/validazione, overflow modale,
 Escape e ripristino focus, preferenze, logout, JSON malformato/duplicati e spunte spesa.
 Gli screenshot del piano e le tracce dei fallimenti finiscono in `test-results/` (ignorato da Git).
 

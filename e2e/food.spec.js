@@ -92,3 +92,24 @@ test('shopping checks persist after navigation and reload', async ({ page }) => 
   await navigate(page, 'Lista della spesa');
   await expect(page.locator('.shopping-item').filter({ hasText: ingredient }).getByRole('checkbox')).toBeChecked();
 });
+
+test('recipe photo validates files, previews and persists after save', async ({ page }) => {
+  await navigate(page, 'Ricette');
+  await page.getByRole('button', { name: /Nuova ricetta/ }).click();
+  const dialog = page.getByRole('dialog');
+  const upload = dialog.getByLabel('Scegli una foto dal dispositivo');
+  await upload.setInputFiles({ name:'not-an-image.txt', mimeType:'text/plain', buffer:Buffer.from('test') });
+  await expect(dialog.getByRole('alert')).toContainText('JPEG, PNG o WebP');
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aU1sAAAAASUVORK5CYII=', 'base64');
+  await upload.setInputFiles({ name:'photo.png', mimeType:'image/png', buffer:png });
+  await expect(dialog.getByAltText('Anteprima foto della ricetta')).toBeVisible();
+  await expect(dialog.getByRole('alert')).toHaveCount(0);
+  await dialog.getByLabel('Nome', { exact:true }).fill('Foto E2E');
+  await dialog.getByLabel('Tempo di preparazione (min)').fill('15');
+  await dialog.getByRole('button', { name:'Salva ricetta', exact:true }).click();
+  await expect(dialog).toHaveCount(0);
+  await page.reload();
+  await navigate(page, 'Ricette');
+  await page.getByRole('heading', { name:'Foto E2E', exact:true }).click();
+  await expect(page.getByRole('dialog').locator('.recipe-detail-image')).toHaveAttribute('style', /data:image\/png/);
+});
