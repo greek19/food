@@ -29,7 +29,7 @@ GitHub Pages previsto: [greek19.github.io/food](https://greek19.github.io/food/)
 - Scelto React + Vite come stack leggero e gratuito, compatibile con GitHub Pages.
 - UI della fase 1 portata in componenti React mantenendo classi CSS, dati demo e interazioni principali.
 - Auth Supabase/demo spostata in `src/auth.js`; runtime config gestita da `.env.local` o dal fallback pubblico in `public/`.
-- Workflow aggiornato per `pnpm install`, lint, build e pubblicazione di `dist/`.
+- Workflow aggiornato per `npm install`, lint, build e pubblicazione di `dist/`.
 - Lint e build locale verificati con successo; deploy ancora sospeso su richiesta dell'utente.
 
 ## Prossima fase suggerita

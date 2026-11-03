@@ -8,11 +8,11 @@ Fondamenta UI per il portale privato dedicato a ricette, profili nutrizionali, p
 
 ## Avvio locale
 
-Il progetto usa React + Vite. Richiede Node.js 20+ e pnpm.
+Il progetto usa React + Vite. Richiede Node.js 20+ e npm oppure pnpm.
 
 ```powershell
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
 Apri poi l'URL mostrato da Vite, normalmente [http://localhost:5173](http://localhost:5173).
