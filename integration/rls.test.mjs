@@ -30,7 +30,7 @@ test('actual migrations enforce shared access and space isolation', async (t) =>
       insert into spaces(id,owner_id) values('${id(10)}','${id(1)}'),('${id(20)}','${id(3)}');
       insert into space_members(space_id,user_id,role) values('${id(10)}','${id(1)}','owner'),('${id(10)}','${id(2)}','member'),('${id(20)}','${id(3)}','owner');
       insert into recipes(id,space_id,author_id,title,calories,servings,ingredients,diet_tags) values
-      ('${id(11)}','${id(10)}','${id(1)}','Shared',500,2,'[{"name":"Riso","quantity":200,"unit":"g"}]',array['vegan']),
+      ('${id(11)}','${id(10)}','${id(1)}','Shared',500,2,'[{"name":"Rice","quantity":200,"unit":"g"}]',array['vegan']),
       ('${id(21)}','${id(20)}','${id(3)}','Private',400,1,'[]',array['vegan']);
       insert into meal_plans(id,space_id,week_start,created_by) values('${id(22)}','${id(20)}','2030-01-07','${id(3)}');
       set role authenticated;`);
@@ -48,7 +48,7 @@ test('actual migrations enforce shared access and space isolation', async (t) =>
       assert.equal((await db.query('select * from spaces where id=$1', [id(20)])).rows.length,0);
       assert.equal((await db.query('update recipes set title=$1 where id=$2 returning id',['Forbidden',id(21)])).rows.length,0);
       assert.equal((await db.query('delete from recipes where id=$1 returning id',[id(21)])).rows.length,0);
-      await assert.rejects(save(20,21));
+      await assert.rejects(save(20,21), /Access to this space is not allowed/);
       await assert.rejects(db.query('select set_food_meal_preference($1,$2,true)',[id(20),'snack']));
       await user(3);
       assert.equal((await db.query('select * from meal_plans where space_id=$1',[id(10)])).rows.length,0);

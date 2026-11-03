@@ -12,13 +12,13 @@ declare
   v_item jsonb;
 begin
   if auth.uid() is null or not public.is_space_member(p_space_id) then
-    raise exception 'Accesso allo spazio non consentito';
+    raise exception 'Access to this space is not allowed';
   end if;
   if p_week_start is null or extract(isodow from p_week_start) <> 1 then
-    raise exception 'La settimana deve iniziare di lunedì';
+    raise exception 'The week must start on Monday';
   end if;
   if jsonb_typeof(p_items) is distinct from 'array' or jsonb_array_length(p_items) = 0 then
-    raise exception 'Nessun pasto da salvare';
+    raise exception 'No meals to save';
   end if;
   -- Serializes writes to the same space/week, including first-time generation.
   perform pg_advisory_xact_lock(hashtextextended(p_space_id::text || p_week_start::text, 0));
@@ -28,11 +28,11 @@ begin
   select id into strict v_plan_id from public.meal_plans
     where space_id = p_space_id and week_start = p_week_start for update;
   if p_generate and exists(select 1 from public.meal_plan_items where meal_plan_id = v_plan_id) then
-    raise exception 'Questa settimana ha già un piano. Modifica i singoli pasti.';
+    raise exception 'This week already has a plan. Edit individual meals instead.';
   end if;
   for v_item in select value from jsonb_array_elements(p_items) loop
     if not exists(select 1 from public.recipes where id = (v_item->>'recipe_id')::uuid and space_id = p_space_id) then
-      raise exception 'Ricetta non disponibile nello spazio';
+      raise exception 'Recipe is not available in this space';
     end if;
     insert into public.meal_plan_items(meal_plan_id, recipe_id, day_of_week, meal_type, servings, notes)
       values(v_plan_id, (v_item->>'recipe_id')::uuid, (v_item->>'day_of_week')::smallint,

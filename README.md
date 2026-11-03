@@ -1,103 +1,120 @@
-# FOOD.
+# FOOD
+
+A private, shared meal-planning app built with React, Vite, and Supabase.
+
+Live site: [greek19.github.io/food](https://greek19.github.io/food/)
 
 Repository: [github.com/greek19/food](https://github.com/greek19/food)
 
-GitHub Pages previsto: [greek19.github.io/food](https://greek19.github.io/food/)
+## Features
 
-Fondamenta UI per il portale privato dedicato a ricette, profili nutrizionali, piano settimanale e lista della spesa.
+- Email/password authentication and shared household data protected by row-level security.
+- Recipe editing, multiple meal times, per-serving nutrition and fiber, and non-destructive JSON import.
+- Private recipe photo uploads with previews, JPEG/PNG/WebP support, and a 5 MB limit.
+- Individual calorie and macro targets, diet types, and ingredient exclusions.
+- Weekly calendar, searchable recipe selection, individual servings, and daily balancing previews.
+- Atomic meal-plan and shopping-list saves, preserving existing shopping checks.
+- Shared optional breakfast and snack settings.
+- Local demo mode during development only; production requires configured Supabase authentication.
 
-## Avvio locale
+The application, source comments, documentation, and test output use English. Existing household content is not translated automatically.
 
-Il progetto usa React + Vite. Richiede Node.js 20+ e npm oppure pnpm.
+## Local development
+
+Requires Node.js 20.12+ and npm or pnpm.
 
 ```powershell
 npm install
 npm run dev
 ```
 
-Apri poi l'URL mostrato da Vite, normalmente [http://localhost:5173](http://localhost:5173).
+Open the URL printed by Vite, usually [localhost:5173](http://localhost:5173).
+Copy `.env.example` to `.env.local` and set the public Supabase configuration to connect to a real project:
 
-## Struttura
-
-- `src/App.jsx` — componenti React per shell, dashboard, ricette, piano, lista e impostazioni.
-- `src/main.jsx` — bootstrap React e caricamento runtime config.
-- `src/config.js` — caricamento opzionale della configurazione Supabase locale.
-- `styles.css` — tokens visivi, layout responsive, componenti e stati.
-- `src/auth.js` — adapter demo locale oppure Supabase Auth tramite `@supabase/supabase-js`.
-- `.env.example` — esempio copiabile per la configurazione locale, senza valori reali.
-- `.env.local` — override locale ignorato da git; contiene solo valori pubblici inseriti dall'utente.
-- `public/supabase-config.js` — risoluzione della configurazione runtime senza credenziali nel repository.
-- `supabase/schema.sql` — schema iniziale con profili, spazi condivisi, membri, profili nutrizionali, ricette e RLS.
-- `supabase/migrations/002_food_core.sql` — tabelle e policy RLS per profili per persona, piani settimanali e lista aggregata.
-- `supabase/migrations/004_recipe_meal_types.sql` — selezione multipla dei momenti del giorno per ricetta, con backfill non distruttivo.
-- `supabase/migrations/005_recipe_fiber.sql` — fibre in grammi per porzione, con default 0 per ricette già esistenti.
-- `STATUS.md` — stato della fase e roadmap per la prossima iterazione.
-
-## Note
-
-Le immagini delle ricette usano URL Unsplash per mantenere il repository leggero durante la fase demo.
-
-## Fase 2: autenticazione e dati
-
-La UI ora ha tre stati verificabili:
-
-- modalità demo locale, persistita solo in `localStorage` e consentita esclusivamente durante `vite dev`;
-- schermata di login e logout, con protezione logica delle sezioni quando non c'è sessione;
-- schermata di configurazione indisponibile in produzione se Supabase non è configurato;
-- adapter Supabase attivo solo quando sono presenti URL e anon/publishable key.
-
-Per collegare localmente un progetto Supabase reale:
-
-1. Crea un progetto su Supabase e abilita Email/Password in Authentication.
-2. Esegui [`supabase/schema.sql`](supabase/schema.sql) nell'SQL Editor.
-3. Copia `.env.example` in `.env.local`:
-
-   ```powershell
-   Copy-Item .env.example .env.local
-   ```
-
-4. Inserisci in `.env.local` i due valori pubblici di Supabase Project Settings → API:
-   - `VITE_SUPABASE_URL`: origin del progetto, ad esempio `https://YOUR_PROJECT.supabase.co` (non aggiungere `/rest/v1`, `/auth/v1` o `/storage/v1`);
-   - `VITE_SUPABASE_PUBLISHABLE_KEY`: Publishable key (oppure `VITE_SUPABASE_ANON_KEY` nei progetti che usano ancora quel nome).
-
-   Vite carica automaticamente `.env.local`; il file non è versionato e non viene copiato in `dist/`.
-5. Non usare mai `service_role`, password o altri segreti nel frontend o nel repository.
-
-Esempio di configurazione runtime (da fornire al processo di build/hosting, non da committare con valori reali):
-
-```html
-<script>
-  window.__FOOD_RUNTIME_CONFIG__ = {
-    SUPABASE_URL: "https://YOUR_PROJECT.supabase.co",
-    SUPABASE_PUBLISHABLE_KEY: "YOUR_PUBLIC_PUBLISHABLE_KEY"
-  };
-</script>
+```dotenv
+VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
 ```
 
-Per verificare login/logout dopo la configurazione:
+Use the project origin without API suffixes. The legacy `VITE_SUPABASE_ANON_KEY` name is also supported.
+Never place service-role keys, account passwords, or secret keys in frontend variables.
+Local environment files are ignored by Git.
 
-1. Avvia `pnpm dev` e apri l'URL locale mostrato da Vite.
-2. Controlla che il badge mostri “Supabase configurato”.
-3. Usa un utente Email/Password già creato nel progetto Supabase e verifica l'accesso.
-4. Premi l'icona di uscita nel profilo laterale: le viste diventano protette e compare la schermata login.
-5. In sviluppo locale puoi usare “Continua senza account” per verificare il fallback demo; questa opzione non viene mostrata nella build di produzione.
+## Database setup
 
-Su GitHub Pages `.env.local` non viene incluso perché ignorato da git e non finisce in `dist/`. Il workflow legge le variabili pubbliche `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` dalle **Repository variables** di GitHub Actions. Se non sono impostate, la produzione resta chiusa e mostra una schermata di configurazione: non effettua auto-login demo.
+Enable Email/Password authentication in Supabase. For a new project, run
+[`schema.sql`](supabase/schema.sql), then the numbered files in
+[`supabase/migrations`](supabase/migrations) in ascending order.
+For an existing project, apply only pending migrations; do not rerun the initial schema.
 
-Per configurare GitHub: apri **Settings → Secrets and variables → Actions → Variables**, crea `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY`, poi rilancia il workflow. La Publishable/anon key è destinata al client; non usare mai `service_role`, password o secret key.
+| Migration | Purpose |
+| --- | --- |
+| 002 | Household profiles, meal plans, and shopping lists |
+| 003 | Authenticated table grants |
+| 004 | Multiple meal times per recipe |
+| 005 | Fiber per serving |
+| 006 | Optional meals and excluded foods |
+| 007 | Atomic meal-plan and shopping-list writes |
+| 008 | Shared breakfast/snack preferences |
+| 009 | Structured diets and recipe compatibility |
+| 010 | Cross-space reference checks |
+| 011 | Private recipe photo storage |
+| 012 | English messages for existing database functions |
 
-## Pubblicazione GitHub Pages
+Account creation and shared-space membership are separate. Accounts must belong to the same space to share data.
+Member invitations are still a roadmap item.
 
-Il workflow [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) installa le dipendenze, esegue lint/build e pubblica `dist/` su GitHub Pages a ogni push su `main`.
+## Recipe import and photos
 
-Passaggio manuale iniziale: nel repository GitHub apri **Settings → Pages**, imposta **Source: GitHub Actions**, poi esegui il workflow dal tab **Actions** oppure fai un push su `main`. Senza Repository variables Supabase il deploy resta volutamente chiuso.
+Open **Recipes → Import JSON** to download the template, paste an array, or select a JSON file.
+The preview validates records and detects duplicate titles. Existing recipes are never overwritten.
+Fix validation errors before importing.
 
-## Funzionalità dati
+Nutrition values describe **one serving**. Ingredient quantities describe the full recipe's **base servings**.
+The shopping list scales those quantities to the planned total servings.
 
-Con Supabase configurato, lo spazio supporta ricette condivise, profili nutrizionali distinti, generazione deterministica di pranzo/cena, porzioni modificabili, fibre per porzione e lista della spesa aggregata. Dopo aver eseguito `schema.sql`, le migrazioni `002_food_core.sql`, `003_authenticated_grants.sql`, `004_recipe_meal_types.sql` e `005_recipe_fiber.sql`, crea almeno un utente Email/Password e prova il flusso login → CRUD ricetta → profilo → genera piano → spunta spesa.
+Photo selection is local until **Save recipe** is pressed. Uploaded photos use a private bucket and temporary
+signed links; existing external image URLs remain supported. See [photo storage notes](integration/photos.md).
 
-Se il progetto Supabase esiste già, esegui `004_recipe_meal_types.sql` dopo le migrazioni precedenti: copia automaticamente il vecchio `meal_type` in `meal_types` e conserva il campo legacy per compatibilità.
+## Tests
 
-Per un progetto già esistente, esegui anche `005_recipe_fiber.sql`: aggiunge `fiber_g` senza modificare i valori già presenti e assegna `0` alle ricette storiche.
+```powershell
+npm test
+npm run test:rls
+npx playwright install chromium
+npm run test:e2e
+npm run lint
+npm run build
+```
 
-Per l’importazione multipla, apri Ricette → **Importa JSON**, scarica il template, compila un array di ricette e incollalo oppure trascina il file. L’anteprima segnala errori e duplicati; solo le righe valide e non duplicate vengono inserite, senza sovrascrivere titoli già presenti.
+Browser tests use an isolated local demo fixture, not real Supabase accounts.
+SQL tests apply the repository's actual migrations in a local PostgreSQL engine.
+Live checks require credentials in an ignored local file; see [integration instructions](integration/README.md).
+Never commit test credentials or paste passwords into chat.
+
+## Deployment
+
+The [GitHub Pages workflow](.github/workflows/deploy-pages.yml) checks application logic, SQL policies,
+desktop/mobile browser flows, lint, and the production build before publishing `dist/` on pushes to `main`.
+Set GitHub Pages to **GitHub Actions** and configure repository variables
+`VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
+Without Supabase configuration, production shows a setup screen instead of entering demo mode.
+
+The runtime fallback is [public/supabase-config.js](public/supabase-config.js).
+It accepts `window.__FOOD_RUNTIME_CONFIG__` with public `SUPABASE_URL` and
+`SUPABASE_PUBLISHABLE_KEY` values provided by the hosting environment.
+
+## Project layout
+
+- `src/App.jsx`: application shell, authentication, recipes, household profiles, and page integration.
+- `src/Planner.jsx`: weekly calendar and meal editing.
+- `src/data.js`: Supabase/demo data adapters.
+- `src/nutrition.js`: individual portions and daily optimization.
+- `src/diets.js`: explicit diet compatibility.
+- `src/RecipePhotoField.jsx` and `src/photos.js`: upload UI and file validation.
+- `styles.css`: shared visual tokens and responsive components.
+- `supabase/`: schema, grants, policies, and migrations.
+- `e2e/`: isolated desktop/mobile browser tests.
+- `integration/`: local policy tests and opt-in live checks.
+
+See [STATUS.md](STATUS.md) for the verified state and [ROADMAP.md](ROADMAP.md) for remaining work.

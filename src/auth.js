@@ -7,7 +7,7 @@ function hasSupabaseConfig(config) {
 }
 
 function demoUser() {
-  return { id: "demo-user", email: "greco@food.local", name: "Greco Casa" };
+  return { id: "demo-user", email: "greco@food.local", name: "Greco Home" };
 }
 
 function mapSupabaseSession(session) {
@@ -45,19 +45,19 @@ export function createFoodAuth(config = {}, { demoAllowed = false } = {}) {
   }
 
   async function signIn(email, password) {
-    if (!email || !password) throw new Error("Inserisci email e password.");
+    if (!email || !password) throw new Error("Enter your email and password.");
     if (client) {
       const { data, error } = await client.auth.signInWithPassword({ email, password });
       if (error) throw error;
       return mapSupabaseSession(data.session);
     }
-    if (!demoAllowed) throw new Error("Supabase non è configurato per questo ambiente.");
+    if (!demoAllowed) throw new Error("Supabase is not configured for this environment.");
     localStorage.setItem(DEMO_SESSION_KEY, "active");
     return { source: "demo", user: { ...demoUser(), email } };
   }
 
   async function continueDemo() {
-    if (!demoAllowed) throw new Error("La modalità demo è disponibile solo in sviluppo locale.");
+    if (!demoAllowed) throw new Error("Demo mode is only available in local development.");
     localStorage.setItem(DEMO_SESSION_KEY, "active");
     return { source: "demo", user: demoUser() };
   }

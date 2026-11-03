@@ -7,15 +7,15 @@ declare
   v_recipe_space uuid;
 begin
   select space_id into v_space from public.meal_plans where id = new.meal_plan_id;
-  if v_space is null then raise exception 'Piano non disponibile nello spazio'; end if;
+  if v_space is null then raise exception 'Plan unavailable in this space'; end if;
   if tg_table_name = 'shopping_items' then
     if new.space_id is distinct from v_space then
-      raise exception 'Lista della spesa e piano devono appartenere allo stesso spazio';
+      raise exception 'Shopping list and meal plan must belong to the same space';
     end if;
   elsif tg_table_name = 'meal_plan_items' then
     select space_id into v_recipe_space from public.recipes where id = new.recipe_id;
     if v_recipe_space is distinct from v_space then
-      raise exception 'Ricetta e piano devono appartenere allo stesso spazio';
+      raise exception 'Recipe and meal plan must belong to the same space';
     end if;
   end if;
   return new;

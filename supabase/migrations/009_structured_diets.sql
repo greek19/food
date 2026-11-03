@@ -12,7 +12,7 @@ declare
   v_space uuid;
 begin
   select diet_tags, space_id into v_tags, v_space from public.recipes where id = new.recipe_id;
-  if v_space is null then raise exception 'Ricetta non disponibile'; end if;
+  if v_space is null then raise exception 'Recipe unavailable'; end if;
   if exists (
     select 1 from public.household_profiles p where p.space_id = v_space and p.is_active and not (
       p.diet_type = 'omnivore'
@@ -20,7 +20,7 @@ begin
       or (p.diet_type = 'vegetarian' and v_tags && array['vegan', 'vegetarian']::text[])
       or (p.diet_type = 'pescatarian' and v_tags && array['vegan', 'vegetarian', 'pescatarian']::text[])
     )
-  ) then raise exception 'Ricetta non compatibile con i profili alimentari dello spazio'; end if;
+  ) then raise exception 'Recipe does not match the space diet profiles'; end if;
   return new;
 end;
 $$;

@@ -6,7 +6,7 @@ create extension if not exists "pgcrypto";
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
-  display_name text not null default 'Nuovo profilo',
+  display_name text not null default 'New profile',
   avatar_url text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -14,7 +14,7 @@ create table if not exists public.profiles (
 
 create table if not exists public.spaces (
   id uuid primary key default gen_random_uuid(),
-  name text not null default 'Casa FOOD',
+  name text not null default 'Home FOOD',
   owner_id uuid not null references auth.users(id) on delete cascade,
   created_at timestamptz not null default now()
 );

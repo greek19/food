@@ -1,27 +1,26 @@
-# Foto delle ricette
+# Recipe photos
 
-Applicare `supabase/migrations/011_recipe_photos.sql` prima del rilascio.
-Lo script aggiunge `recipes.image_path`, crea il bucket privato `recipe-images`
-con limite di 5 MB e formati JPEG/PNG/WebP, e assegna l'accesso ai membri dello spazio.
-La cartella iniziale dell'oggetto è l'ID dello spazio; nomi casuali evitano sovrascritture.
+Apply `supabase/migrations/011_recipe_photos.sql` before using private photo uploads.
+It adds `recipes.image_path`, creates the private `recipe-images` bucket with a 5 MB limit
+and JPEG/PNG/WebP content types, and grants access through member-only object policies.
+The first path segment is the space ID; random file names prevent overwrites.
 
-Le ricette conservano il percorso Storage; gli URL firmati sono generati alla lettura
-e durano 24 ore. Non vengono salvati nel database. Ricaricare la pagina rinnova i link.
-Le foto esterne preesistenti restano supportate e non vengono trasferite automaticamente.
-La demo locale usa un data URL in localStorage, soggetto alla quota del browser.
+Recipes store the Storage path. Signed URLs are generated when data loads and expire after 24 hours;
+they are not persisted in the database. Reloading the page renews them.
+Existing external image URLs remain supported and are not migrated automatically.
+The local demo stores a data URL in localStorage and is subject to browser storage quotas.
 
-La selezione mostra un'anteprima locale; l'upload parte solo al salvataggio.
-Se la scrittura della ricetta fallisce dopo l'upload, l'adapter tenta di rimuovere il nuovo oggetto.
-Se manca la connessione anche durante questa rimozione, può restare un oggetto non referenziato.
-Le foto sostituite o scollegate vengono conservate: non si eliminano automaticamente oggetti
-che potrebbero essere usati altrove. È previsto un successivo controllo degli oggetti non referenziati.
+Selecting a file creates a local preview. Upload starts only when the recipe is saved.
+If the database write fails after upload, the adapter attempts to remove the new object.
+A failed connection during cleanup may leave an unreferenced object.
+Replaced or detached photos are retained rather than risking deletion of objects used elsewhere.
+A reference-aware cleanup strategy remains on the roadmap.
 
-Test: validazione e rollback dell'upload con client simulato, caricamento/anteprima/persistenza
-demo su desktop e mobile, policy Storage su schema metadata locale simulato.
-Verifica reale eseguita con successo dopo la migrazione: upload temporaneo, lettura e firma
-dal secondo membro, accesso pubblico/firma anonima negati e rimozione confermata della foto di test.
-Per ripeterla: `npm run test:storage:remote`. Usa le credenziali locali già configurate;
-scrive solo un oggetto temporaneo con nome casuale, poi lo rimuove. Non modifica ricette o piani.
+Verification covers file validation and upload rollback with a simulated client,
+desktop/mobile demo uploads and persistence, and Storage policies on simulated local metadata.
+Live verification has passed: temporary upload, second-member download and signing,
+denied public download/anonymous signing, and confirmed cleanup.
+Repeat it with `npm run test:storage:remote`; it uses the configured local test credentials.
 
-Riferimenti: [bucket privati](https://supabase.com/docs/guides/storage/buckets/fundamentals),
-[controllo accessi](https://supabase.com/docs/guides/storage/security/access-control).
+References: [private buckets](https://supabase.com/docs/guides/storage/buckets/fundamentals)
+and [access control](https://supabase.com/docs/guides/storage/security/access-control).

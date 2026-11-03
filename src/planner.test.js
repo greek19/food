@@ -93,7 +93,7 @@ test('remote edits use a single atomic RPC and report a missing migration', asyn
   await assert.rejects(adapter.savePlanItem({ ...item, servings: 0 }));
   assert.equal(calls.length, 1);
   client.rpc = async () => ({ error: { code: 'PGRST202' } });
-  await assert.rejects(adapter.savePlanItem(item), /migrazione 007/);
+  await assert.rejects(adapter.savePlanItem(item), /migration 007/);
 });
 
 test('shared preferences default off and persist across demo adapter instances', async () => {
@@ -119,8 +119,8 @@ test('remote preferences save only the changed setting and surface permission er
   assert.equal((await adapter.loadPreferences()).breakfast_enabled, true);
   await adapter.saveMealPreference('snack', true);
   assert.deepEqual(calls[0], { name: 'set_food_meal_preference', payload: { p_space_id: 'space', p_meal: 'snack', p_enabled: true } });
-  client.rpc = async () => ({ error: new Error('Accesso negato') });
-  await assert.rejects(adapter.saveMealPreference('snack', false), /Accesso negato/);
+  client.rpc = async () => ({ error: new Error('Access denied') });
+  await assert.rejects(adapter.saveMealPreference('snack', false), /Access denied/);
   client.from = () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ error: { code: 'PGRST205' } }) }) }) });
   assert.deepEqual(await adapter.loadPreferences(), { breakfast_enabled: false, snack_enabled: false, available: false });
 });

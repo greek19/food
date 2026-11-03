@@ -12,7 +12,7 @@ export function balanceDay(items, people) {
   const fraction = [...new Set(items.map((item) => item.meal_type))].reduce((sum, meal) => sum + (mealShares[meal] || 0), 0);
   const portions = items.map((item) => ({ ...personPortions(item, people) }));
   for (const person of people) {
-    if (!(Number(person.calorie_target) > 0) || items.some((item) => !(Number(item.recipe?.calories) > 0))) throw new Error("Servono target calorici e calorie delle ricette maggiori di zero.");
+    if (!(Number(person.calorie_target) > 0) || items.some((item) => !(Number(item.recipe?.calories) > 0))) throw new Error("Calories targets and recipe calories must be greater than zero.");
     const targets = [person.calorie_target, person.protein_target_g, person.carbs_target_g, person.fat_target_g].map((value) => Number(value || 0) * fraction);
     const base = items.map((item) => Number(person.calorie_target) * mealShares[item.meal_type] / item.recipe.calories);
     const nutrients = items.map((item) => [item.recipe.calories, item.recipe.protein_g, item.recipe.carbs_g, item.recipe.fat_g].map((value) => Number(value || 0)));

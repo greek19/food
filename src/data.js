@@ -17,11 +17,11 @@ const imageUrls = {
 const demoRecipes = [
   {
     id: "demo-zucchini",
-    title: "Carbonara di zucchine",
-    description: "Una pasta cremosa e vegetariana con zucchine, pecorino e pepe nero.",
+    title: "Zucchini carbonara",
+    description: "Creamy vegetarian pasta with zucchini, pecorino, and black pepper.",
     image_url: imageUrls.zucchini,
     meal_type: "lunch",
-    cuisine: "Italiana",
+    cuisine: "Italian",
     prep_minutes: 25,
     calories: 490,
     protein_g: 21,
@@ -29,20 +29,20 @@ const demoRecipes = [
     fat_g: 17,
     servings: 2,
     ingredients: [
-      { name: "Pasta integrale", quantity: 160, unit: "g", category: "Dispensa" },
-      { name: "Zucchine", quantity: 300, unit: "g", category: "Ortofrutta" },
-      { name: "Pecorino", quantity: 40, unit: "g", category: "Frigo" },
-      { name: "Uova", quantity: 2, unit: "pz", category: "Frigo" },
+      { name: "Whole-wheat pasta", quantity: 160, unit: "g", category: "Pantry" },
+      { name: "Zucchini", quantity: 300, unit: "g", category: "Produce" },
+      { name: "Pecorino", quantity: 40, unit: "g", category: "Refrigerated" },
+      { name: "Eggs", quantity: 2, unit: "pcs", category: "Refrigerated" },
     ],
-    steps: ["Taglia le zucchine e saltale in padella.", "Cuoci la pasta al dente.", "Unisci uova e pecorino fuori dal fuoco, poi manteca."],
+    steps: ["Slice and sauté the zucchini.", "Cook the pasta until al dente.", "Remove from heat, add eggs and pecorino, and stir until creamy."],
   },
   {
     id: "demo-salmon",
-    title: "Salmone al sesamo",
-    description: "Salmone glassato al sesamo con riso e verdure croccanti.",
+    title: "Sesame salmon",
+    description: "Sesame-glazed salmon with rice and crunchy vegetables.",
     image_url: imageUrls.salmon,
     meal_type: "dinner",
-    cuisine: "Mediterranea",
+    cuisine: "Mediterranean",
     prep_minutes: 30,
     calories: 580,
     protein_g: 35,
@@ -50,20 +50,20 @@ const demoRecipes = [
     fat_g: 28,
     servings: 2,
     ingredients: [
-      { name: "Filetti di salmone", quantity: 300, unit: "g", category: "Pescheria" },
-      { name: "Riso basmati", quantity: 120, unit: "g", category: "Dispensa" },
-      { name: "Sesamo", quantity: 20, unit: "g", category: "Dispensa" },
-      { name: "Broccoli", quantity: 300, unit: "g", category: "Ortofrutta" },
+      { name: "Salmon fillets", quantity: 300, unit: "g", category: "Fish counter" },
+      { name: "Basmati rice", quantity: 120, unit: "g", category: "Pantry" },
+      { name: "Sesame", quantity: 20, unit: "g", category: "Pantry" },
+      { name: "Broccoli", quantity: 300, unit: "g", category: "Produce" },
     ],
-    steps: ["Condisci il salmone con soia e sesamo.", "Cuoci il riso e i broccoli al vapore.", "Rosola il salmone e servi insieme."],
+    steps: ["Season the salmon with soy sauce and sesame.", "Cook the rice and steam the broccoli.", "Sear the salmon and serve together."],
   },
   {
     id: "demo-bowl",
-    title: "Bowl mediterranea",
-    description: "Farro, ceci, verdure e feta: pronta in un quarto d'ora.",
+    title: "Mediterranean bowl",
+    description: "Farro, chickpeas, vegetables, and feta, ready in fifteen minutes.",
     image_url: imageUrls.bowl,
     meal_type: "lunch",
-    cuisine: "Mediterranea",
+    cuisine: "Mediterranean",
     prep_minutes: 15,
     calories: 420,
     protein_g: 16,
@@ -71,20 +71,20 @@ const demoRecipes = [
     fat_g: 15,
     servings: 2,
     ingredients: [
-      { name: "Farro perlato", quantity: 140, unit: "g", category: "Dispensa" },
-      { name: "Ceci cotti", quantity: 240, unit: "g", category: "Dispensa" },
-      { name: "Pomodorini", quantity: 250, unit: "g", category: "Ortofrutta" },
-      { name: "Feta", quantity: 80, unit: "g", category: "Frigo" },
+      { name: "Pearled farro", quantity: 140, unit: "g", category: "Pantry" },
+      { name: "Cooked chickpeas", quantity: 240, unit: "g", category: "Pantry" },
+      { name: "Cherry tomatoes", quantity: 250, unit: "g", category: "Produce" },
+      { name: "Feta", quantity: 80, unit: "g", category: "Refrigerated" },
     ],
-    steps: ["Cuoci il farro e lascialo intiepidire.", "Taglia le verdure e sbriciola la feta.", "Componi le bowl e condisci con olio e limone."],
+    steps: ["Cook the farro and let it cool slightly.", "Chop the vegetables and crumble the feta.", "Assemble the bowls and dress with olive oil and lemon."],
   },
   {
     id: "demo-curry",
-    title: "Curry di ceci",
-    description: "Ceci, latte di cocco e spezie per una cena vegetale e saziante.",
+    title: "Chickpea curry",
+    description: "Chickpeas, coconut milk, and spices for a satisfying plant-based dinner.",
     image_url: imageUrls.curry,
     meal_type: "dinner",
-    cuisine: "Vegetariana",
+    cuisine: "Vegetarian",
     prep_minutes: 35,
     calories: 510,
     protein_g: 19,
@@ -92,20 +92,20 @@ const demoRecipes = [
     fat_g: 18,
     servings: 2,
     ingredients: [
-      { name: "Ceci cotti", quantity: 400, unit: "g", category: "Dispensa" },
-      { name: "Latte di cocco", quantity: 200, unit: "ml", category: "Dispensa" },
-      { name: "Spinaci", quantity: 200, unit: "g", category: "Ortofrutta" },
-      { name: "Riso basmati", quantity: 120, unit: "g", category: "Dispensa" },
+      { name: "Cooked chickpeas", quantity: 400, unit: "g", category: "Pantry" },
+      { name: "Coconut milk", quantity: 200, unit: "ml", category: "Pantry" },
+      { name: "Spinach", quantity: 200, unit: "g", category: "Produce" },
+      { name: "Basmati rice", quantity: 120, unit: "g", category: "Pantry" },
     ],
-    steps: ["Soffriggi cipolla e spezie.", "Aggiungi ceci e latte di cocco.", "Completa con spinaci e servi con riso."],
+    steps: ["Sauté the onion and spices.", "Add chickpeas and coconut milk.", "Add spinach and serve with rice."],
   },
   {
     id: "demo-chicken",
-    title: "Pollo al limone e verdure",
-    description: "Petto di pollo tenero, limone e verdure di stagione.",
+    title: "Lemon chicken and vegetables",
+    description: "Tender chicken breast with lemon and seasonal vegetables.",
     image_url: imageUrls.chicken,
     meal_type: "dinner",
-    cuisine: "Italiana",
+    cuisine: "Italian",
     prep_minutes: 30,
     calories: 540,
     protein_g: 32,
@@ -113,24 +113,24 @@ const demoRecipes = [
     fat_g: 21,
     servings: 2,
     ingredients: [
-      { name: "Petto di pollo", quantity: 400, unit: "g", category: "Frigo" },
-      { name: "Patate", quantity: 350, unit: "g", category: "Ortofrutta" },
-      { name: "Zucchine", quantity: 250, unit: "g", category: "Ortofrutta" },
-      { name: "Limoni", quantity: 2, unit: "pz", category: "Ortofrutta" },
+      { name: "Chicken breast", quantity: 400, unit: "g", category: "Refrigerated" },
+      { name: "Potatoes", quantity: 350, unit: "g", category: "Produce" },
+      { name: "Zucchini", quantity: 250, unit: "g", category: "Produce" },
+      { name: "Lemons", quantity: 2, unit: "pcs", category: "Produce" },
     ],
-    steps: ["Taglia patate e zucchine.", "Rosola il pollo con il limone.", "Cuoci tutto in forno fino a doratura."],
+    steps: ["Chop the potatoes and zucchini.", "Sear the chicken with lemon.", "Bake until golden."],
   },
 ];
 
 const demoPeople = [
-  { id: "person-greco", display_name: "Greco", goal: "Mantenimento", calorie_target: 2100, protein_target_g: 110, carbs_target_g: 260, fat_target_g: 70, dietary_preferences: "Onnivoro · Nessuna allergia" },
-  { id: "person-martina", display_name: "Martina", goal: "Energia e benessere", calorie_target: 1800, protein_target_g: 90, carbs_target_g: 220, fat_target_g: 60, dietary_preferences: "Onnivora · Poco piccante" },
+  { id: "person-greco", display_name: "Greco", goal: "Maintenance", calorie_target: 2100, protein_target_g: 110, carbs_target_g: 260, fat_target_g: 70, dietary_preferences: "Omnivore · No allergies" },
+  { id: "person-martina", display_name: "Martina", goal: "Energy and wellbeing", calorie_target: 1800, protein_target_g: 90, carbs_target_g: 220, fat_target_g: 60, dietary_preferences: "Omnivore · Mild flavors" },
 ];
 
 function isoDate(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`; }
 function mondayOf(date = new Date()) { const result = new Date(date); const day = (result.getDay() + 6) % 7; result.setDate(result.getDate() - day); result.setHours(0, 0, 0, 0); return isoDate(result); }
 function stableSeed(value) { return [...value].reduce((total, char) => total + char.charCodeAt(0), 0); }
-function normalizeIngredient(value) { return value.trim().toLocaleLowerCase("it-IT").replace(/\s+/g, " "); }
+function normalizeIngredient(value) { return value.trim().toLocaleLowerCase("en-GB").replace(/\s+/g, " "); }
 function recipeMealTypes(recipe) { return Array.isArray(recipe.meal_types) && recipe.meal_types.length ? recipe.meal_types : [recipe.meal_type ?? "dinner"]; }
 
 function makeDemoPlan(recipeList = demoRecipes, weekStart = mondayOf()) {
@@ -152,16 +152,16 @@ function makeShopping(plan, recipeList) {
     const recipe = item.recipe ?? byId.get(item.recipe_id);
     if (!recipe) return;
     (recipe.ingredients ?? []).forEach((ingredient) => {
-      const unit = ingredient.unit ?? "pz";
-      const key = `${normalizeIngredient(ingredient.name)}|${unit}|${ingredient.category ?? "Altro"}`;
-      const current = grouped.get(key) ?? { id: `shopping-${key}`, name: ingredient.name, quantity: 0, unit, category: ingredient.category ?? "Altro", checked: false };
+      const unit = ingredient.unit ?? "pcs";
+      const key = `${normalizeIngredient(ingredient.name)}|${unit}|${ingredient.category ?? "Other"}`;
+      const current = grouped.get(key) ?? { id: `shopping-${key}`, name: ingredient.name, quantity: 0, unit, category: ingredient.category ?? "Other", checked: false };
       const scale = Number(item.servings ?? 1) / Number(recipe.servings ?? 1);
       current.quantity += Number(ingredient.quantity ?? 0) * scale;
       current.ingredient_key = key;
       grouped.set(key, current);
     });
   });
-  return [...grouped.values()].sort((a, b) => `${a.category}${a.name}`.localeCompare(`${b.category}${b.name}`, "it"));
+  return [...grouped.values()].sort((a, b) => `${a.category}${a.name}`.localeCompare(`${b.category}${b.name}`, "en"));
 }
 
 function readDemoStore() {
@@ -192,24 +192,24 @@ export function parseRecipeImport(text) {
   try {
     const parsed = JSON.parse(text);
     records = Array.isArray(parsed) ? parsed : parsed?.recipes;
-    if (!Array.isArray(records)) throw new Error("Il JSON deve essere un array o un oggetto con la proprietà recipes.");
+    if (!Array.isArray(records)) throw new Error("JSON must be an array or an object with a recipes property.");
   } catch (error) {
-    return { recipes: [], errors: [error.message || "JSON non valido."] };
+    return { recipes: [], errors: [error.message || "Invalid JSON."] };
   }
   const recipes = records.map((record, index) => {
     const rowNumber = index + 1;
-    if (!record || typeof record !== "object") { errors.push(`Riga ${rowNumber}: elemento non valido.`); return null; }
+    if (!record || typeof record !== "object") { errors.push(`Row ${rowNumber}: invalid item.`); return null; }
     const title = String(record.title ?? "").trim();
     const mealTypes = (Array.isArray(record.meal_types) ? record.meal_types : [record.meal_type ?? "dinner"]).map((item) => String(item).trim().toLowerCase()).filter(Boolean);
     const invalidMealTypes = mealTypes.filter((item) => !allowedMealTypes.has(item));
-    if (!title) errors.push(`Riga ${rowNumber}: manca title.`);
-    if (!mealTypes.length || invalidMealTypes.length) errors.push(`Riga ${rowNumber}: meal_types non validi (${invalidMealTypes.join(", ") || "vuoti"}).`);
+    if (!title) errors.push(`Row ${rowNumber}: title is required.`);
+    if (!mealTypes.length || invalidMealTypes.length) errors.push(`Row ${rowNumber}: invalid meal_types (${invalidMealTypes.join(", ") || "empty"}).`);
     const servings = asNumber(record.servings, 0);
-    if (servings <= 0) errors.push(`Riga ${rowNumber}: servings deve essere maggiore di zero.`);
+    if (servings <= 0) errors.push(`Row ${rowNumber}: servings must be greater than zero.`);
     if (!title || !mealTypes.length || invalidMealTypes.length || servings <= 0) return null;
     const ingredients = Array.isArray(record.ingredients) ? record.ingredients : [];
     let dietTags;
-    try { dietTags = parseDietTags(record.diet_tags); } catch (error) { errors.push(`Riga ${rowNumber}: ${error.message}`); return null; }
+    try { dietTags = parseDietTags(record.diet_tags); } catch (error) { errors.push(`Row ${rowNumber}: ${error.message}`); return null; }
     const steps = asList(record.steps);
     return {
       title,
@@ -243,11 +243,11 @@ export function createFoodData({ auth }) {
     if (!spaceIdPromise) spaceIdPromise = (async () => {
       const session = await auth.getSession();
       const userId = session?.user?.id;
-      if (!userId) throw new Error("Sessione Supabase non disponibile.");
+      if (!userId) throw new Error("Supabase session unavailable.");
       const memberships = await client.from("space_members").select("space_id").eq("user_id", userId).limit(1);
       if (memberships.error) throw memberships.error;
       if (memberships.data?.[0]?.space_id) return memberships.data[0].space_id;
-      const created = await client.from("spaces").insert({ name: "Casa FOOD", owner_id: userId }).select("id").single();
+      const created = await client.from("spaces").insert({ name: "Home FOOD", owner_id: userId }).select("id").single();
       if (created.error) throw created.error;
       const membership = await client.from("space_members").insert({ space_id: created.data.id, user_id: userId, role: "owner" });
       if (membership.error) throw membership.error;
@@ -296,11 +296,11 @@ export function createFoodData({ auth }) {
   }
 
   async function saveMealPreference(meal, enabled) {
-    if (!["breakfast", "snack"].includes(meal) || typeof enabled !== "boolean") throw new Error("Preferenza non valida.");
+    if (!["breakfast", "snack"].includes(meal) || typeof enabled !== "boolean") throw new Error("Invalid preference.");
     if (!remote) { const store = readDemoStore(); store.preferences = { ...(store.preferences ?? {}), [`${meal}_enabled`]: enabled }; writeDemoStore(store); return; }
     const spaceId = await getSpaceId();
     const result = await client.rpc("set_food_meal_preference", { p_space_id: spaceId, p_meal: meal, p_enabled: enabled });
-    if (result.error?.code === "PGRST202") throw new Error("Preferenze condivise non ancora disponibili. È necessario completare l’aggiornamento del database.");
+    if (result.error?.code === "PGRST202") throw new Error("Shared preferences are not available yet. Complete the database update first.");
     if (result.error) throw result.error;
   }
 
@@ -326,7 +326,7 @@ export function createFoodData({ auth }) {
     if (photoFile) {
       uploadedPath = `${spaceId}/${crypto.randomUUID()}.${validatePhoto(photoFile)}`;
       const upload = await client.storage.from(PHOTO_BUCKET).upload(uploadedPath, photoFile, { contentType: photoFile.type, upsert: false });
-      if (upload.error) throw new Error('Caricamento foto non riuscito. Controlla connessione e configurazione Storage.');
+      if (upload.error) throw new Error('Photo upload failed. Check your connection and Storage setup.');
       payload.image_path = uploadedPath;
     }
     if (payload.image_path) payload.image_url = null;
@@ -355,7 +355,7 @@ export function createFoodData({ auth }) {
   }
 
   function planPayload(item) {
-    if (!item.recipe_id || !Number.isFinite(Number(item.servings)) || Number(item.servings) <= 0) throw new Error("Scegli una ricetta e un numero di porzioni valido.");
+    if (!item.recipe_id || !Number.isFinite(Number(item.servings)) || Number(item.servings) <= 0) throw new Error("Choose a recipe and a valid serving count.");
     return { recipe_id: item.recipe_id, day_of_week: item.day_of_week, meal_type: item.meal_type, servings: Number(item.servings), notes: item.notes ?? "" };
   }
 
@@ -365,7 +365,7 @@ export function createFoodData({ auth }) {
       p_space_id: spaceId, p_week_start: weekStart, p_items: items.map(planPayload), p_generate: generate,
     });
     if (result.error) {
-      if (result.error.code === "PGRST202") throw new Error("Aggiornamento del database necessario: applica la migrazione 007 prima di salvare il piano.");
+      if (result.error.code === "PGRST202") throw new Error("Database update required: apply migration 007 before saving the plan.");
       throw result.error;
     }
   }
@@ -386,9 +386,9 @@ export function createFoodData({ auth }) {
   }
 
   async function generatePlan(weekStart = mondayOf(), recipeList, people, meals = ["lunch", "dinner"]) {
-    if (!recipeList?.length) throw new Error("Aggiungi almeno una ricetta prima di generare il piano.");
+    if (!recipeList?.length) throw new Error("Add at least one recipe before generating a plan.");
     const existing = await loadAll(weekStart);
-    if (existing.plan.length) throw new Error("Questa settimana ha già un piano. Modifica i singoli pasti.");
+    if (existing.plan.length) throw new Error("This week already has a plan. Edit individual meals instead.");
     const generated = buildPersonalPlan(recipeList, people, weekStart, meals);
     if (!remote) { const store = readDemoStore(); store.plan.push(...generated); store.shopping = makeShopping(generated, recipeList); writeDemoStore(store); return generated; }
     await persistPlan(weekStart, generated, true);
@@ -396,8 +396,8 @@ export function createFoodData({ auth }) {
   }
 
   async function saveDay(items) {
-    if (!items.length) throw new Error("Nessun pasto da bilanciare.");
-    if (items.some((item) => item.week_start !== items[0].week_start || item.day_of_week !== items[0].day_of_week)) throw new Error("Seleziona i pasti dello stesso giorno.");
+    if (!items.length) throw new Error("No meals to balance.");
+    if (items.some((item) => item.week_start !== items[0].week_start || item.day_of_week !== items[0].day_of_week)) throw new Error("Select meals from the same day.");
     items.forEach(planPayload);
     if (remote) { await persistPlan(items[0].week_start, items); return; }
     const store = readDemoStore();
@@ -445,7 +445,7 @@ export function buildPersonalPlan(recipes, people, weekStart, meals) {
   const weights = { breakfast: 0.2, lunch: 0.35, dinner: 0.35, snack: 0.1 };
   const plan = Array.from({ length: 7 }, (_, day) => meals.map((mealType) => {
     const candidates = recipes.filter((recipe) => recipeMealTypes(recipe).includes(mealType) && compatibleRecipe(recipe, people) && Number(recipe.calories) > 0);
-    if (!candidates.length) throw new Error(`Nessuna ricetta compatibile per ${mealType}. Controlla ricette ed esclusioni.`);
+    if (!candidates.length) throw new Error(`No compatible recipe for ${mealType}. Check your recipes and exclusions.`);
     // Compare protein/carbohydrate/fat density at each person's calorie target.
     const ranked = candidates.map((recipe) => ({ recipe, score: people.reduce((score, person) => {
       const portions = Number(person.calorie_target) * weights[mealType] / recipe.calories;

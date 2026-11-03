@@ -21,10 +21,10 @@ create or replace function public.set_food_meal_preference(p_space_id uuid, p_me
 returns void language plpgsql security invoker set search_path = public as $$
 begin
   if auth.uid() is null or not public.is_space_member(p_space_id) then
-    raise exception 'Accesso allo spazio non consentito';
+    raise exception 'Access to this space is not allowed';
   end if;
   if p_meal is null or p_meal not in ('breakfast', 'snack') or p_enabled is null then
-    raise exception 'Preferenza non valida';
+    raise exception 'Invalid preference';
   end if;
   insert into public.space_preferences(space_id, breakfast_enabled, snack_enabled)
   values(p_space_id, case when p_meal = 'breakfast' then p_enabled else false end,

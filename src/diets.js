@@ -1,8 +1,8 @@
 export const dietOptions = [
-  { value: "omnivore", label: "Onnivora" },
-  { value: "vegetarian", label: "Vegetariana" },
-  { value: "vegan", label: "Vegana" },
-  { value: "pescatarian", label: "Pescetariana" },
+  { value: "omnivore", label: "Omnivore" },
+  { value: "vegetarian", label: "Vegetarian" },
+  { value: "vegan", label: "Vegan" },
+  { value: "pescatarian", label: "Pescatarian" },
 ];
 export const recipeDietOptions = dietOptions.filter((option) => option.value !== "omnivore");
 
@@ -17,6 +17,6 @@ export function matchesDiet(recipe, diet = "omnivore") {
 
 export function parseDietTags(value) {
   if (value === undefined) return [];
-  if (!Array.isArray(value) || value.some((tag) => !recipeDietOptions.some((option) => option.value === tag))) throw new Error("diet_tags deve contenere solo vegetarian, vegan o pescatarian.");
+  if (!Array.isArray(value) || value.some((tag) => !recipeDietOptions.some((option) => option.value === tag))) throw new Error("diet_tags must contain only vegetarian, vegan, or pescatarian.");
   return [...new Set(value)];
 }

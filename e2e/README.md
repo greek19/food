@@ -1,17 +1,18 @@
-# Verifica browser FOOD
+# FOOD browser verification
 
-Eseguire `npx playwright install chromium`, poi `npm run test:e2e`.
-La configurazione avvia Vite sulla porta 4174 e verifica Chromium desktop e viewport mobile iPhone 13.
+Run `npx playwright install chromium`, then `npm run test:e2e`.
+The configuration starts Vite on port 4174 and checks desktop Chromium and an emulated iPhone 13 viewport.
 
-La fixture monta la stessa app con l'adapter demo. Non legge configurazioni Supabase,
-non usa credenziali reali e non viene inclusa nella build di produzione.
-Ogni test ha un contesto browser isolato.
+The fixture mounts the same application with the demo adapter. It does not load Supabase configuration
+or use real credentials, and it is not included in the production build.
+Each test gets an isolated browser context.
 
-Copertura: calendario/settimane, generazione, autocomplete con tastiera, quantità individuali,
-persistenza dopo reload, proposta e salvataggio del bilanciamento, upload foto con anteprima/validazione, overflow modale,
-Escape e ripristino focus, preferenze, logout, JSON malformato/duplicati e spunte spesa.
-Gli screenshot del piano e le tracce dei fallimenti finiscono in `test-results/` (ignorato da Git).
+Coverage includes the calendar, generation, keyboard recipe search, individual portions,
+persistence after reload, balancing proposals and saves, internal modal scrolling, Escape and focus return,
+optional meals, logout, malformed/duplicate JSON, shopping checks, and photo validation/preview/persistence.
 
-Limiti: emulazione mobile Chromium, non Safari su dispositivo reale. Nessuna prova
-di email/password Supabase, sincronizzazione tra due sessioni remote o policy RLS del progetto reale.
-Queste verifiche richiedono un ambiente Supabase di test e account dedicati.
+Planner screenshots and failure traces are written to `test-results/`, which Git ignores.
+
+Limitations: mobile Chromium emulation is not Safari on a real device. These tests do not verify
+Supabase email/password authentication, synchronization between remote sessions, or the real project's RLS policies.
+See [integration checks](../integration/README.md) for local SQL tests and opt-in live checks.

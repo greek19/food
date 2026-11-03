@@ -23,7 +23,7 @@ function loadScript(path) {
     script.src = `${basePath}${path}`;
     script.async = false;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error(`Impossibile caricare ${path}`));
+    script.onerror = () => reject(new Error(`Unable to load ${path}`));
     document.head.appendChild(script);
   });
 }
