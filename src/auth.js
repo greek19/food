@@ -34,6 +34,7 @@ export function createFoodAuth(config = {}, { demoAllowed = false } = {}) {
       const { data, error } = await client.auth.getSession();
       if (error) throw error;
       if (data.session) return mapSupabaseSession(data.session);
+      return null;
     }
 
     if (!demoAllowed) return null;
@@ -69,5 +70,5 @@ export function createFoodAuth(config = {}, { demoAllowed = false } = {}) {
     localStorage.removeItem(DEMO_SESSION_KEY);
   }
 
-  return { mode, getSession, signIn, continueDemo, signOut };
+  return { mode, getClient: () => client, getSession, signIn, continueDemo, signOut };
 }

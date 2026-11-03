@@ -28,6 +28,7 @@ Apri poi l'URL mostrato da Vite, normalmente [http://localhost:5173](http://loca
 - `.env.local` — override locale ignorato da git; contiene solo valori pubblici inseriti dall'utente.
 - `public/supabase-config.js` — risoluzione della configurazione runtime senza credenziali nel repository.
 - `supabase/schema.sql` — schema iniziale con profili, spazi condivisi, membri, profili nutrizionali, ricette e RLS.
+- `supabase/migrations/002_food_core.sql` — tabelle e policy RLS per profili per persona, piani settimanali e lista aggregata.
 - `STATUS.md` — stato della fase e roadmap per la prossima iterazione.
 
 ## Note
@@ -88,3 +89,7 @@ Per configurare GitHub: apri **Settings → Secrets and variables → Actions �
 Il workflow [`deploy-pages.yml`](.github/workflows/deploy-pages.yml) installa le dipendenze, esegue lint/build e pubblica `dist/` su GitHub Pages a ogni push su `main`.
 
 Passaggio manuale iniziale: nel repository GitHub apri **Settings → Pages**, imposta **Source: GitHub Actions**, poi esegui il workflow dal tab **Actions** oppure fai un push su `main`. Senza Repository variables Supabase il deploy resta volutamente chiuso.
+
+## Funzionalità dati
+
+Con Supabase configurato, lo spazio supporta ricette condivise, profili nutrizionali distinti, generazione deterministica di pranzo/cena, porzioni modificabili e lista della spesa aggregata. Dopo aver eseguito `schema.sql` e la migrazione `002_food_core.sql`, crea almeno un utente Email/Password e prova il flusso login → CRUD ricetta → profilo → genera piano → spunta spesa.

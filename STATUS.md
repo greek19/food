@@ -34,25 +34,35 @@ GitHub Pages previsto: [greek19.github.io/food](https://greek19.github.io/food/)
 - Workflow configurato per leggere `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` dalle Repository variables GitHub Actions.
 - Lint e build locale verificati con successo; deploy ancora sospeso su richiesta dell'utente.
 
+## Fase 3 implementata (CRUD, piani e spesa)
+
+- Aggiunto `src/data.js` con adapter demo persistente e adapter Supabase per ricette, profili nutrizionali, piano e lista aggregata.
+- Ricette gestibili con creazione, modifica, eliminazione, ingredienti, procedimento, foto e valori nutrizionali per porzione.
+- Profili nutrizionali separati per persona, con obiettivi e preferenze usati nel riepilogo e nelle porzioni.
+- Generatore settimanale deterministico per pranzo/cena, modificabile per giorno, ricetta e numero di porzioni.
+- Lista della spesa aggregata per ingrediente, unità e reparto, con stato sincronizzabile.
+- Aggiunta [`supabase/migrations/002_food_core.sql`](supabase/migrations/002_food_core.sql) per tabelle, indici, colonna `recipes.servings` e policy RLS condivise.
+- Lint e build verificati dopo l'implementazione.
+
 ## Prossima fase suggerita
 
 1. Inserire localmente URL e Publishable/anon key in `.env.local` senza committarli.
 2. Creare il progetto Supabase, eseguire [`supabase/schema.sql`](supabase/schema.sql) e verificare le policy RLS con due utenti di test.
-3. Collegare la dashboard a query reali per profilo nutrizionale, ricette, pasti e lista della spesa.
+3. Verificare in Supabase le query remote di ricette, profili, piano e lista con due utenti di test.
 4. Aggiungere onboarding per creazione spazio e invito di un secondo membro.
 5. Spostare le immagini delle ricette in uno storage gestito oppure in asset versionati nel repository.
 6. Aggiungere test end-to-end per navigazione, sessioni e permessi tra membri.
 
 ## Punto di ripresa esatto
 
-Partire da `.env.local`, `src/auth.js` e `supabase/schema.sql`: inserire localmente URL/Publishable key, eseguire lo schema su un progetto Supabase di test, verificare login/logout e sostituire progressivamente i dati statici dei componenti React con query autorizzate da RLS.
+Partire da `.env.local`, `src/auth.js` e `supabase/migrations/002_food_core.sql`: inserire localmente URL/Publishable key, eseguire schema e migrazione su un progetto Supabase di test, verificare login/logout e CRUD con due utenti autorizzati da RLS.
 
 ## Limiti attuali
 
 - Nessun progetto Supabase reale è collegato: mancano URL, anon key e consenso/configurazione del progetto.
 - Senza variabili Supabase nella build produzione mostra la schermata di configurazione indisponibile e nega l'accesso.
 - `.env.local` contiene ancora valori vuoti di esempio.
-- Il backend adapter usa ancora dati statici per dashboard, piano e lista della spesa.
-- Il calendario e i dati nutrizionali sono statici e dimostrativi.
+- L'adapter remoto è pronto ma non verificabile end-to-end finché non vengono forniti progetto Supabase e variabili pubbliche.
+- Il fallback demo resta intenzionalmente separato e disponibile solo con `vite dev`.
 - Le foto arrivano da Unsplash via URL remoto.
 - Il workflow richiede l'attivazione iniziale di GitHub Pages con sorgente `GitHub Actions` nelle impostazioni del repository.
