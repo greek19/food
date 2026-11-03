@@ -29,6 +29,7 @@ Apri poi l'URL mostrato da Vite, normalmente [http://localhost:5173](http://loca
 - `public/supabase-config.js` — risoluzione della configurazione runtime senza credenziali nel repository.
 - `supabase/schema.sql` — schema iniziale con profili, spazi condivisi, membri, profili nutrizionali, ricette e RLS.
 - `supabase/migrations/002_food_core.sql` — tabelle e policy RLS per profili per persona, piani settimanali e lista aggregata.
+- `supabase/migrations/004_recipe_meal_types.sql` — selezione multipla dei momenti del giorno per ricetta, con backfill non distruttivo.
 - `STATUS.md` — stato della fase e roadmap per la prossima iterazione.
 
 ## Note
@@ -92,4 +93,6 @@ Passaggio manuale iniziale: nel repository GitHub apri **Settings → Pages**, i
 
 ## Funzionalità dati
 
-Con Supabase configurato, lo spazio supporta ricette condivise, profili nutrizionali distinti, generazione deterministica di pranzo/cena, porzioni modificabili e lista della spesa aggregata. Dopo aver eseguito `schema.sql`, le migrazioni `002_food_core.sql` e `003_authenticated_grants.sql`, crea almeno un utente Email/Password e prova il flusso login → CRUD ricetta → profilo → genera piano → spunta spesa.
+Con Supabase configurato, lo spazio supporta ricette condivise, profili nutrizionali distinti, generazione deterministica di pranzo/cena, porzioni modificabili e lista della spesa aggregata. Dopo aver eseguito `schema.sql`, le migrazioni `002_food_core.sql`, `003_authenticated_grants.sql` e `004_recipe_meal_types.sql`, crea almeno un utente Email/Password e prova il flusso login → CRUD ricetta → profilo → genera piano → spunta spesa.
+
+Se il progetto Supabase esiste già, esegui `004_recipe_meal_types.sql` dopo le migrazioni precedenti: copia automaticamente il vecchio `meal_type` in `meal_types` e conserva il campo legacy per compatibilità.

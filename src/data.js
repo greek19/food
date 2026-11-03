@@ -126,10 +126,11 @@ function isoDate(date) { return date.toISOString().slice(0, 10); }
 function mondayOf(date = new Date()) { const result = new Date(date); const day = (result.getDay() + 6) % 7; result.setDate(result.getDate() - day); result.setHours(0, 0, 0, 0); return isoDate(result); }
 function stableSeed(value) { return [...value].reduce((total, char) => total + char.charCodeAt(0), 0); }
 function normalizeIngredient(value) { return value.trim().toLocaleLowerCase("it-IT").replace(/\s+/g, " "); }
+function recipeMealTypes(recipe) { return Array.isArray(recipe.meal_types) && recipe.meal_types.length ? recipe.meal_types : [recipe.meal_type ?? "dinner"]; }
 
 function makeDemoPlan(recipeList = demoRecipes, weekStart = mondayOf()) {
-  const lunch = recipeList.filter((recipe) => recipe.meal_type === "lunch");
-  const dinner = recipeList.filter((recipe) => recipe.meal_type === "dinner");
+  const lunch = recipeList.filter((recipe) => recipeMealTypes(recipe).includes("lunch"));
+  const dinner = recipeList.filter((recipe) => recipeMealTypes(recipe).includes("dinner"));
   const seed = stableSeed(weekStart);
   return Array.from({ length: 7 }, (_, day) => ["lunch", "dinner"].map((mealType, index) => {
     const candidates = mealType === "lunch" ? lunch : dinner;
@@ -172,7 +173,8 @@ function readDemoStore() {
 function writeDemoStore(store) { localStorage.setItem(DEMO_STORE_KEY, JSON.stringify(store)); return store; }
 
 function mapRecipe(row) {
-  return { ...row, ingredients: Array.isArray(row.ingredients) ? row.ingredients : [], steps: Array.isArray(row.steps) ? row.steps : [], servings: row.servings ?? 2 };
+  const mealTypes = recipeMealTypes(row);
+  return { ...row, meal_types: mealTypes, meal_type: row.meal_type ?? mealTypes[0], ingredients: Array.isArray(row.ingredients) ? row.ingredients : [], steps: Array.isArray(row.steps) ? row.steps : [], servings: row.servings ?? 2 };
 }
 
 export function createFoodData({ auth }) {
@@ -223,7 +225,8 @@ export function createFoodData({ auth }) {
   async function saveRecipe(recipe) {
     if (!remote) {
       const store = readDemoStore();
-      const saved = { ...recipe, id: recipe.id ?? `demo-recipe-${Date.now()}` };
+      const mealTypes = recipeMealTypes(recipe);
+      const saved = { ...recipe, meal_types: mealTypes, meal_type: mealTypes[0], id: recipe.id ?? `demo-recipe-${Date.now()}` };
       const index = store.recipes.findIndex((item) => item.id === saved.id);
       index >= 0 ? store.recipes.splice(index, 1, saved) : store.recipes.unshift(saved);
       writeDemoStore(store);
@@ -231,7 +234,11 @@ export function createFoodData({ auth }) {
     }
     const spaceId = await getSpaceId();
     const session = await auth.getSession();
-    const payload = { ...recipe, space_id: spaceId, author_id: session.user.id };
+    const mealTypes = recipeMealTypes(recipe);
+    const payload = { ...recipe, meal_types: mealTypes, meal_type: mealTypes[0], space_id: spaceId, author_id: session.user.id };
+    delete payload.mealTypes;
+    delete payload.ingredientsText;
+    delete payload.stepsText;
     const result = await client.from("recipes").upsert(payload).select().single();
     if (result.error) throw result.error;
     return mapRecipe(result.data);
