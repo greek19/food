@@ -186,6 +186,9 @@ button { cursor: pointer; }
 .recipe-detail-columns li { margin-bottom: 8px; }
 .recipe-detail-columns li small { float: right; color: #a1aaa0; margin-left: 12px; }
 .recipe-detail-macros { border-top: 1px solid #eef0eb; padding-top: 16px; }
+.delete-confirmation { margin-top: 18px; padding: 15px; border: 1px solid #f0d8cf; border-radius: 13px; background: #fff8f4; }
+.delete-confirmation strong { color: #8c5e4d; font-size: 12px; }
+.delete-confirmation p { color: #9b8177; font-size: 10px; margin: 6px 0 12px; }
 .button-danger { background: #f8e3dc; color: #b46551; }
 .empty-state { padding: 25px 0; color: #9aa499; font-size: 11px; text-align: center; }
 .settings-copy { color: #778a75; font-size: 11px; line-height: 1.6; margin: 0 0 20px; }
