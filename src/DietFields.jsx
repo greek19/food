@@ -1,0 +1,9 @@
+import { dietOptions, recipeDietOptions } from "./diets.js";
+
+export function PersonDietField({ value, onChange }) {
+  return <label>Tipo di alimentazione<select value={value ?? "omnivore"} onChange={(event) => onChange(event.target.value)}>{dietOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select><small>Il piano propone ricette compatibili con tutte le persone.</small></label>;
+}
+
+export function RecipeDietField({ value = [], onChange }) {
+  return <fieldset className="meal-type-fieldset diet-fieldset"><legend>Compatibilità alimentare</legend><div className="meal-type-picker">{recipeDietOptions.map((option) => <label className={`meal-type-option${value.includes(option.value) ? " is-selected" : ""}`} key={option.value}><input type="checkbox" checked={value.includes(option.value)} onChange={() => onChange(value.includes(option.value) ? value.filter((tag) => tag !== option.value) : [...value, option.value])} />{option.label}</label>)}</div><small>Seleziona solo le compatibilità verificate negli ingredienti. Nessuna selezione: ricetta non classificata. Una ricetta vegana è adatta anche a vegetariani e pescetariani.</small></fieldset>;
+}

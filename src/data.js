@@ -1,3 +1,7 @@
+import { matchesDiet, parseDietTags } from "./diets.js";
+import { balanceDay } from "./nutrition.js";
+export { personPortions } from "./nutrition.js";
+
 const DEMO_STORE_KEY = "food.demo.data.v2";
 
 const imageUrls = {
@@ -203,9 +207,12 @@ export function parseRecipeImport(text) {
     if (servings <= 0) errors.push(`Riga ${rowNumber}: servings deve essere maggiore di zero.`);
     if (!title || !mealTypes.length || invalidMealTypes.length || servings <= 0) return null;
     const ingredients = Array.isArray(record.ingredients) ? record.ingredients : [];
+    let dietTags;
+    try { dietTags = parseDietTags(record.diet_tags); } catch (error) { errors.push(`Riga ${rowNumber}: ${error.message}`); return null; }
     const steps = asList(record.steps);
     return {
       title,
+      diet_tags: dietTags,
       description: String(record.description ?? "").trim(),
       image_url: String(record.image_url ?? "").trim(),
       meal_types: [...new Set(mealTypes)],
@@ -368,13 +375,26 @@ export function createFoodData({ auth }) {
     return generated;
   }
 
+  async function saveDay(items) {
+    if (!items.length) throw new Error("Nessun pasto da bilanciare.");
+    if (items.some((item) => item.week_start !== items[0].week_start || item.day_of_week !== items[0].day_of_week)) throw new Error("Seleziona i pasti dello stesso giorno.");
+    items.forEach(planPayload);
+    if (remote) { await persistPlan(items[0].week_start, items); return; }
+    const store = readDemoStore();
+    const replacements = new Map(items.map((item) => [`${item.week_start}|${item.day_of_week}|${item.meal_type}`, item]));
+    store.plan = store.plan.map((item) => replacements.get(`${item.week_start}|${item.day_of_week}|${item.meal_type}`) ?? item);
+    const checks = new Map(store.shopping.map((item) => [item.id, item.checked]));
+    store.shopping = makeShopping(store.plan.filter((item) => item.week_start === items[0].week_start), store.recipes).map((item) => ({ ...item, checked: checks.get(item.id) ?? false }));
+    writeDemoStore(store);
+  }
+
   async function toggleShopping(itemId, checked) {
     if (!remote) { const store = readDemoStore(); store.shopping = makeShopping(store.plan, store.recipes).map((item) => item.id === itemId ? { ...item, checked } : { ...item, checked: (store.shopping ?? []).find((saved) => saved.id === item.id)?.checked ?? false }); writeDemoStore(store); return; }
     const result = await client.from("shopping_items").update({ checked }).eq("id", itemId);
     if (result.error) throw result.error;
   }
 
-  return { remote, loadAll, loadPreferences, saveMealPreference, saveRecipe, deleteRecipe, savePerson, savePlanItem, generatePlan, toggleShopping };
+  return { remote, loadAll, loadPreferences, saveMealPreference, saveRecipe, deleteRecipe, savePerson, savePlanItem, saveDay, generatePlan, toggleShopping };
 }
 
 export function calculatePlanNutrition(plan, people = []) {
@@ -392,14 +412,10 @@ export function calculatePlanNutrition(plan, people = []) {
   return { ...totals, perPerson: { calories: totals.calories / divisor, protein: totals.protein / divisor, carbs: totals.carbs / divisor, fat: totals.fat / divisor } };
 }
 
-export function personPortions(item, people) {
-  try { const parsed = JSON.parse(item.notes || "{}"); if (parsed.portions) return parsed.portions; } catch { /* Legacy free-text notes. */ }
-  return Object.fromEntries(people.map((person) => [person.id, Number(item.servings || 1) / Math.max(1, people.length)]));
-}
-
 export function compatibleRecipe(recipe, people) {
   const ingredients = (recipe.ingredients ?? []).map((item) => normalizeIngredient(item.name)).join(" ");
   return people.every((person) => {
+    if (!matchesDiet(recipe, person.diet_type)) return false;
     const excluded = String(person.excluded_foods ?? "").split(",").map((item) => normalizeIngredient(item)).filter(Boolean);
     return excluded.every((term) => !ingredients.includes(term));
   });
@@ -407,7 +423,7 @@ export function compatibleRecipe(recipe, people) {
 
 export function buildPersonalPlan(recipes, people, weekStart, meals) {
   const weights = { breakfast: 0.2, lunch: 0.35, dinner: 0.35, snack: 0.1 };
-  return Array.from({ length: 7 }, (_, day) => meals.map((mealType) => {
+  const plan = Array.from({ length: 7 }, (_, day) => meals.map((mealType) => {
     const candidates = recipes.filter((recipe) => recipeMealTypes(recipe).includes(mealType) && compatibleRecipe(recipe, people) && Number(recipe.calories) > 0);
     if (!candidates.length) throw new Error(`Nessuna ricetta compatibile per ${mealType}. Controlla ricette ed esclusioni.`);
     // Compare protein/carbohydrate/fat density at each person's calorie target.
@@ -423,6 +439,7 @@ export function buildPersonalPlan(recipes, people, weekStart, meals) {
     const portions = Object.fromEntries(people.map((person) => [person.id, Math.max(0.05, Math.round(Number(person.calorie_target) * weights[mealType] / recipe.calories * 100) / 100)]));
     return { id: `draft-${weekStart}-${day}-${mealType}`, week_start: weekStart, day_of_week: day, meal_type: mealType, recipe_id: recipe.id, recipe, servings: Object.values(portions).reduce((sum, value) => sum + value, 0) || 1, notes: JSON.stringify({ portions }) };
   })).flat();
+  return Array.from({ length: 7 }, (_, day) => balanceDay(plan.filter((item) => item.day_of_week === day), people)).flat();
 }
 
 export { imageUrls, mondayOf };

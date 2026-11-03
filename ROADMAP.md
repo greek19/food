@@ -22,8 +22,8 @@ Migrazione `supabase/migrations/006_optional_meals.sql` eseguita con successo da
 
 - Verifica browser desktop/mobile ed end-to-end sul database reale dopo migrazione 006, incluse modifiche concorrenti dei due utenti.
 - Migrazione `007_atomic_plan.sql` applicata dall'utente: salvataggio atomico di pasti e spesa, protezione generazione concorrente e conservazione spunte/ID degli ingredienti rimasti. Include un test dell'adapter RPC e verifiche SQL locali su rollback e aggregazione.
-- Filtri dieta strutturati e catalogo allergeni verificato: la ricerca testuale degli ingredienti non certifica assenza di allergeni né contaminazioni.
-- Ottimizzazione nutrizionale dell'intera giornata: ora si stimano porzioni per pasto e si confrontano le densità dei macro; non si garantisce un bilanciamento esatto.
+- Migrazione `009_structured_diets.sql` applicata dall'utente. Filtri onnivora, vegetariana, vegana, pescetariana e classificazione esplicita delle ricette, applicati a generazione/editor/import JSON e verificati anche dal database. Nessuna classificazione automatica delle vecchie ricette. Restano separati il catalogo allergeni e la verifica delle contaminazioni.
+- Bilanciamento giornaliero implementato: ottimizzazione congiunta delle porzioni individuali rispetto a calorie e macro; anteprima prima di applicare ai pasti esistenti e salvataggio atomico della giornata. Non cambia le ricette; usa la quota di target dei momenti presenti (pranzo+cena 70%), senza compensare pasti non inclusi. Non garantisce target esatti con ricette arbitrarie. Undici test automatici.
 - Preferenze dei momenti del giorno condivise: frontend pubblicato con rilevamento della disponibilità della migrazione `008_shared_preferences.sql` (applicazione sul progetto reale non ancora confermata). Refresh al ritorno alla scheda e ogni 15 secondi mentre il piano è visibile. Entrambi i membri possono aggiornare i toggle senza sovrascrivere l'altro campo. Se manca la migrazione, solo i toggle condivisi sono disabilitati.
 - Inviti via email e gestione membri, priorità bassa. Nessuna espansione multispazio richiesta.
 - Storage immagini e upload.
