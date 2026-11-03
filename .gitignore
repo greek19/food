@@ -3,6 +3,8 @@ supabase-config.local.js
 .idea/
 node_modules/
 dist/
+test-results/
+playwright-report/
 .env
 .env.*
 !.env.example
