@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RecipePicker } from "./RecipePicker.jsx";
 import { mondayOf, personPortions, compatibleRecipe } from "./data.js";
 
@@ -6,18 +6,28 @@ const labels = { breakfast: "Colazione", lunch: "Pranzo", dinner: "Cena", snack:
 function dateAt(week, day = 0) { const date = new Date(`${week}T12:00:00`); date.setDate(date.getDate() + day); return date; }
 function dateKey(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`; }
 
-export function Planner({ data, week, onWeek, onGenerate, onSave }) {
+export function Planner({ data, week, onWeek, onGenerate, onSave, onPreference, onSyncPreferences }) {
   const [day, setDay] = useState((new Date().getDay() + 6) % 7);
-  const [optional, setOptional] = useState(() => { try { const saved = JSON.parse(localStorage.getItem("food.optionalMeals") || "[]"); return Array.isArray(saved) ? saved.filter((meal) => ["breakfast", "snack"].includes(meal)) : []; } catch { return []; } });
+  const optional = ["breakfast", "snack"].filter((meal) => data.preferences?.[`${meal}_enabled`]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const meals = Object.keys(labels).filter((meal) => ["lunch", "dinner"].includes(meal) || optional.includes(meal));
   async function run(action) { setBusy(true); setError(""); try { await action(); } catch (failure) { setError(failure.message || "Operazione non riuscita. Riprova."); } finally { setBusy(false); } }
-  function toggle(meal) { const next = optional.includes(meal) ? optional.filter((item) => item !== meal) : [...optional, meal]; setOptional(next); localStorage.setItem("food.optionalMeals", JSON.stringify(next)); }
+  function toggle(meal) { run(() => onPreference(meal, !optional.includes(meal))); }
+  useEffect(() => {
+    if (busy) return;
+    let stopped = false;
+    const sync = () => { if (!stopped && document.visibilityState === "visible") onSyncPreferences().catch(() => { if (!stopped) setError("Sincronizzazione preferenze non riuscita. Riprova aggiornando la pagina."); }); };
+    const timer = window.setInterval(sync, 15000);
+    window.addEventListener("focus", sync);
+    document.addEventListener("visibilitychange", sync);
+    return () => { stopped = true; window.clearInterval(timer); window.removeEventListener("focus", sync); document.removeEventListener("visibilitychange", sync); };
+  }, [busy, onSyncPreferences]);
   return <>
     <div className="page-heading"><div><p className="eyebrow">La vostra settimana</p><h1>Piano settimanale</h1><p>Modifica ricette e porzioni: piano e spesa vengono salvati insieme.</p></div><button className="button button-dark" disabled={busy || data.plan.length > 0} onClick={() => run(() => onGenerate(meals))}>{busy ? "Salvataggio…" : data.plan.length ? "Piano già generato" : "Genera piano"}</button></div>
     {error && <p role="alert" className="planner-error">{error}</p>}
-    <div className="planner-toolbar"><div className="planner-week-controls"><label className="planner-date">Settimana del <input type="date" value={week} disabled={busy} onChange={(event) => event.target.value && onWeek(mondayOf(dateAt(event.target.value)))} /></label><button className="button button-outline" disabled={busy} onClick={() => onWeek(mondayOf())}>Oggi</button></div><div className="planner-toggles"><span className="planner-control-caption">Includi nel piano</span>{["breakfast", "snack"].map((meal) => <label className="planner-toggle" key={meal}><input type="checkbox" checked={optional.includes(meal)} onChange={() => toggle(meal)} /><span className="toggle-track" aria-hidden="true" /><span>{labels[meal]}</span></label>)}</div></div>
+    {data.preferences?.available === false && <p role="status" className="planner-error">Le preferenze condivise saranno disponibili dopo l’aggiornamento del database. Il piano e i pasti restano utilizzabili.</p>}
+    <div className="planner-toolbar"><div className="planner-week-controls"><label className="planner-date">Settimana del <input type="date" value={week} disabled={busy} onChange={(event) => event.target.value && onWeek(mondayOf(dateAt(event.target.value)))} /></label><button className="button button-outline" disabled={busy} onClick={() => onWeek(mondayOf())}>Oggi</button></div><div className="planner-toggles"><span className="planner-control-caption">Includi nel piano</span>{["breakfast", "snack"].map((meal) => <label className="planner-toggle" key={meal}><input type="checkbox" disabled={busy || data.preferences?.available === false} checked={optional.includes(meal)} onChange={() => toggle(meal)} /><span className="toggle-track" aria-hidden="true" /><span>{labels[meal]}</span></label>)}</div></div>
     <p className="heading-copy">Disattivare un momento nasconde i pasti senza cancellarli. Le porzioni automatiche coprono il 35% del target a pranzo e cena, il 20% a colazione e il 10% negli snack.</p>
     <div className="week-strip planner-week-strip"><button className="planner-week-arrow" aria-label="Settimana precedente" disabled={busy} onClick={() => onWeek(dateKey(dateAt(week, -7)))}><Chevron direction="left" /></button><div className="planner-days">{Array.from({ length: 7 }, (_, index) => { const date = dateAt(week, index); return <button key={index} className={`day-pill${day === index ? " is-active" : ""}`} aria-current={dateKey(date) === dateKey(new Date()) ? "date" : undefined} onClick={() => setDay(index)}><small>{date.toLocaleDateString("it-IT", { weekday: "short" })}</small><strong>{date.getDate()}</strong>{dateKey(date) === dateKey(new Date()) && <span className="day-dot" />}</button>; })}</div><button className="planner-week-arrow" aria-label="Settimana successiva" disabled={busy} onClick={() => onWeek(dateKey(dateAt(week, 7)))}><Chevron direction="right" /></button></div>
     <section className="panel planner-panel"><h2>{dateAt(week, day).toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" })}</h2>{meals.map((meal) => <MealEditor key={`${week}-${day}-${meal}`} meal={meal} day={day} week={week} data={data} busy={busy} save={(item) => run(() => onSave(item))} />)}</section>

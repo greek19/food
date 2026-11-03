@@ -254,13 +254,14 @@ export function createFoodData({ auth }) {
       const previous = new Map((store.shopping ?? []).map((item) => [item.id, item.checked]));
       const plan = store.plan.filter((item) => item.week_start === weekStart).map((item) => ({ ...item, recipe: store.recipes.find((recipe) => recipe.id === item.recipe_id) }));
       const shopping = makeShopping(plan, store.recipes).map((item) => ({ ...item, checked: previous.get(item.id) ?? false }));
-      return { ...store, plan, shopping };
+      return { ...store, plan, shopping, preferences: store.preferences ?? { breakfast_enabled: false, snack_enabled: false } };
     }
     const spaceId = await getSpaceId();
-    const [recipeResult, peopleResult, planResult] = await Promise.all([
+    const [recipeResult, peopleResult, planResult, preferences] = await Promise.all([
       client.from("recipes").select("*").eq("space_id", spaceId).order("created_at", { ascending: false }),
       client.from("household_profiles").select("*").eq("space_id", spaceId).eq("is_active", true).order("created_at"),
       client.from("meal_plan_items").select("*, recipe:recipes(*) , meal_plan:meal_plans!inner(*)").eq("meal_plan.space_id", spaceId).eq("meal_plan.week_start", weekStart).order("day_of_week"),
+      loadPreferences(),
     ]);
     [recipeResult, peopleResult, planResult].forEach((result) => { if (result.error) throw result.error; });
     const recipeList = recipeResult.data.map(mapRecipe);
@@ -268,7 +269,26 @@ export function createFoodData({ auth }) {
     const mealPlanId = planResult.data?.[0]?.meal_plan?.id;
     const shoppingResult = mealPlanId ? await client.from("shopping_items").select("*").eq("meal_plan_id", mealPlanId).order("category").order("name") : { data: [] };
     if (shoppingResult.error) throw shoppingResult.error;
-    return { recipes: recipeList, people: peopleResult.data, plan, shopping: shoppingResult.data ?? makeShopping(plan, recipeList) };
+    return { recipes: recipeList, people: peopleResult.data, plan, shopping: shoppingResult.data ?? makeShopping(plan, recipeList), preferences };
+  }
+
+  async function loadPreferences() {
+    const defaults = { breakfast_enabled: false, snack_enabled: false };
+    if (!remote) return readDemoStore().preferences ?? defaults;
+    const spaceId = await getSpaceId();
+    const result = await client.from("space_preferences").select("breakfast_enabled,snack_enabled").eq("space_id", spaceId).maybeSingle();
+    if (["PGRST205", "42P01"].includes(result.error?.code)) return { ...defaults, available: false };
+    if (result.error) throw result.error;
+    return result.data ?? defaults;
+  }
+
+  async function saveMealPreference(meal, enabled) {
+    if (!["breakfast", "snack"].includes(meal) || typeof enabled !== "boolean") throw new Error("Preferenza non valida.");
+    if (!remote) { const store = readDemoStore(); store.preferences = { ...(store.preferences ?? {}), [`${meal}_enabled`]: enabled }; writeDemoStore(store); return; }
+    const spaceId = await getSpaceId();
+    const result = await client.rpc("set_food_meal_preference", { p_space_id: spaceId, p_meal: meal, p_enabled: enabled });
+    if (result.error?.code === "PGRST202") throw new Error("Preferenze condivise non ancora disponibili. È necessario completare l’aggiornamento del database.");
+    if (result.error) throw result.error;
   }
 
   async function saveRecipe(recipe) {
@@ -354,7 +374,7 @@ export function createFoodData({ auth }) {
     if (result.error) throw result.error;
   }
 
-  return { remote, loadAll, saveRecipe, deleteRecipe, savePerson, savePlanItem, generatePlan, toggleShopping };
+  return { remote, loadAll, loadPreferences, saveMealPreference, saveRecipe, deleteRecipe, savePerson, savePlanItem, generatePlan, toggleShopping };
 }
 
 export function calculatePlanNutrition(plan, people = []) {

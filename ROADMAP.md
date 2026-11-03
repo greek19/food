@@ -24,7 +24,7 @@ Migrazione `supabase/migrations/006_optional_meals.sql` eseguita con successo da
 - Migrazione `007_atomic_plan.sql` applicata dall'utente: salvataggio atomico di pasti e spesa, protezione generazione concorrente e conservazione spunte/ID degli ingredienti rimasti. Include un test dell'adapter RPC e verifiche SQL locali su rollback e aggregazione.
 - Filtri dieta strutturati e catalogo allergeni verificato: la ricerca testuale degli ingredienti non certifica assenza di allergeni né contaminazioni.
 - Ottimizzazione nutrizionale dell'intera giornata: ora si stimano porzioni per pasto e si confrontano le densità dei macro; non si garantisce un bilanciamento esatto.
-- Preferenze dei momenti del giorno condivise nel database: attualmente i toggle sono salvati sul dispositivo.
+- Preferenze dei momenti del giorno condivise: frontend pubblicato con rilevamento della disponibilità della migrazione `008_shared_preferences.sql` (applicazione sul progetto reale non ancora confermata). Refresh al ritorno alla scheda e ogni 15 secondi mentre il piano è visibile. Entrambi i membri possono aggiornare i toggle senza sovrascrivere l'altro campo. Se manca la migrazione, solo i toggle condivisi sono disabilitati.
 - Inviti via email e gestione membri, priorità bassa. Nessuna espansione multispazio richiesta.
 - Storage immagini e upload.
 - Test end-to-end automatici di auth/RLS, import e interazioni mobile.

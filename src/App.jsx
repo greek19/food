@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { calculatePlanNutrition, createFoodData, mondayOf, parseRecipeImport, personPortions } from "./data.js";
 import { Planner } from "./Planner.jsx";
 
@@ -139,6 +139,8 @@ export default function App({ auth }) {
   useEffect(() => { let cancelled = false; if (!session) { setDataset(null); return; } setDataset(null); foodData.loadAll(week).then((loaded) => { if (cancelled) return; setDataset(loaded); setSaved(new Set(JSON.parse(localStorage.getItem("food.saved.recipes") ?? "[]"))); }).catch((error) => { if (cancelled) return; setToast(error.message || "Impossibile caricare i dati dello spazio"); setDataset({ recipes: [], people: [], plan: [], shopping: [] }); }); return () => { cancelled = true; }; }, [foodData, session, week]);
   const showToast = (message) => { setToast(message); window.clearTimeout(showToast.timer); showToast.timer = window.setTimeout(() => setToast(""), 3000); };
   const refresh = async () => { const loaded = await foodData.loadAll(week); setDataset(loaded); };
+  const syncPreferences = useCallback(async () => { const preferences = await foodData.loadPreferences(); setDataset((current) => current ? { ...current, preferences } : current); }, [foodData]);
+  const saveMealPreference = async (meal, enabled) => { await foodData.saveMealPreference(meal, enabled); await syncPreferences(); showToast("Preferenze aggiornate per entrambi"); };
   const setView = (next) => { setViewState(next); setMobileMenu(false); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const saveRecipe = async (recipe) => { await foodData.saveRecipe(recipe); await refresh(); showToast("Ricetta salvata nello spazio"); };
   const deleteRecipe = async (id) => { await foodData.deleteRecipe(id); await refresh(); showToast("Ricetta eliminata"); };
@@ -156,7 +158,7 @@ export default function App({ auth }) {
   const openRecipe = (recipe) => setModal({ type: "detail", value: recipe });
   const editRecipe = (recipe) => setModal({ type: "recipe", value: recipe });
   if (view === "recipes") page = <RecipesPage data={dataset} onOpenRecipe={openRecipe} onEditRecipe={editRecipe} onOpenImport={() => setModal({ type: "import" })} onSave={saveFavorite} saved={saved} showToast={showToast} />;
-  else if (view === "plan") page = <Planner data={dataset} week={week} onWeek={setWeek} onGenerate={generatePlan} onSave={savePlanItem} />;
+  else if (view === "plan") page = <Planner data={dataset} week={week} onWeek={setWeek} onGenerate={generatePlan} onSave={savePlanItem} onPreference={saveMealPreference} onSyncPreferences={syncPreferences} />;
   else if (view === "shopping") page = <ShoppingPage data={dataset} onToggle={toggleShopping} showToast={showToast} />;
   else if (view === "settings") page = <SettingsPage data={dataset} onEditPerson={(person) => setModal({ type: "person", value: person })} onAddPerson={() => setModal({ type: "person", value: null })} onLogout={logout} showToast={showToast} />;
   else page = <Dashboard data={dataset} setView={setView} onOpenRecipe={openRecipe} onEditRecipe={editRecipe} onSave={saveFavorite} saved={saved} showToast={showToast} />;

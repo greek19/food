@@ -45,3 +45,32 @@ test('remote edits use a single atomic RPC and report a missing migration', asyn
   client.rpc = async () => ({ error: { code: 'PGRST202' } });
   await assert.rejects(adapter.savePlanItem(item), /migrazione 007/);
 });
+
+test('shared preferences default off and persist across demo adapter instances', async () => {
+  const memory = new Map();
+  globalThis.localStorage = { getItem: (key) => memory.get(key) ?? null, setItem: (key, value) => memory.set(key, value) };
+  const first = createFoodData({ auth: { mode: 'demo' } });
+  assert.deepEqual(await first.loadPreferences(), { breakfast_enabled: false, snack_enabled: false });
+  await first.saveMealPreference('breakfast', true);
+  await first.saveMealPreference('snack', true);
+  await first.saveMealPreference('breakfast', false);
+  const second = createFoodData({ auth: { mode: 'demo' } });
+  assert.deepEqual((await second.loadAll()).preferences, { breakfast_enabled: false, snack_enabled: true });
+  await assert.rejects(first.saveMealPreference('lunch', true));
+});
+
+test('remote preferences save only the changed setting and surface permission errors', async () => {
+  const calls = [];
+  const client = {
+    from: () => ({ select: () => ({ eq: () => ({ limit: async () => ({ data: [{ space_id: 'space' }] }), maybeSingle: async () => ({ data: { breakfast_enabled: true, snack_enabled: false } }) }) }) }),
+    rpc: async (name, payload) => { calls.push({ name, payload }); return {}; },
+  };
+  const adapter = createFoodData({ auth: { mode: 'supabase', getClient: () => client, getSession: async () => ({ user: { id: 'user' } }) } });
+  assert.equal((await adapter.loadPreferences()).breakfast_enabled, true);
+  await adapter.saveMealPreference('snack', true);
+  assert.deepEqual(calls[0], { name: 'set_food_meal_preference', payload: { p_space_id: 'space', p_meal: 'snack', p_enabled: true } });
+  client.rpc = async () => ({ error: new Error('Accesso negato') });
+  await assert.rejects(adapter.saveMealPreference('snack', false), /Accesso negato/);
+  client.from = () => ({ select: () => ({ eq: () => ({ maybeSingle: async () => ({ error: { code: 'PGRST205' } }) }) }) });
+  assert.deepEqual(await adapter.loadPreferences(), { breakfast_enabled: false, snack_enabled: false, available: false });
+});
