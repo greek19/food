@@ -26,3 +26,22 @@ test('demo preserves other weeks and saved recipe changes and blocks duplicate g
   await assert.rejects(adapter.generatePlan('2030-01-07', [recipe], people));
   assert.equal((await adapter.loadAll('2030-01-14')).plan.length, 0);
 });
+
+test('remote edits use a single atomic RPC and report a missing migration', async () => {
+  const calls = [];
+  const client = {
+    from: () => ({ select: () => ({ eq: () => ({ limit: async () => ({ data: [{ space_id: 'space' }] }) }) }) }),
+    rpc: async (name, payload) => { calls.push({ name, payload }); return { error: null }; },
+  };
+  const adapter = createFoodData({ auth: { mode: 'supabase', getClient: () => client, getSession: async () => ({ user: { id: 'user' } }) } });
+  const item = { recipe_id: 'r', week_start: '2030-01-07', day_of_week: 0, meal_type: 'lunch', servings: 2, notes: '{"portions":{"a":2}}' };
+  await adapter.savePlanItem(item);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].name, 'save_food_plan');
+  assert.equal(calls[0].payload.p_generate, false);
+  assert.equal(calls[0].payload.p_items[0].notes, item.notes);
+  await assert.rejects(adapter.savePlanItem({ ...item, servings: 0 }));
+  assert.equal(calls.length, 1);
+  client.rpc = async () => ({ error: { code: 'PGRST202' } });
+  await assert.rejects(adapter.savePlanItem(item), /migrazione 007/);
+});

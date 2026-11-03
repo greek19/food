@@ -2,7 +2,7 @@
 
 Confermato dall'utente: accesso con due utenti, spazio condiviso, generazione piano e logout funzionanti.
 
-## Implementato localmente, da pubblicare
+## Pubblicato
 
 - Calendario con date reali, scelta data, settimane precedenti/successive e oggi evidenziato.
 - Pulsante generazione disattivato per settimane con pasti esistenti; protezione anche nell'adapter.
@@ -14,13 +14,14 @@ Confermato dall'utente: accesso con due utenti, spazio condiviso, generazione pi
 - Corretto il calcolo dei nutrienti per porzione; ingredienti scalati sulle porzioni base.
 - Gestione tastiera e ripristino focus dei modali.
 - Quattro test automatici su target, esclusioni, calendario e isolamento delle settimane demo.
+- Restyling dei controlli del piano e ricerca ricette con selezione da tastiera.
 
 Migrazione `supabase/migrations/006_optional_meals.sql` eseguita con successo dall'utente il 3 novembre 2026. La migrazione aggiunge il campo esclusioni e consente breakfast/snack.
 
 ## Ancora aperto
 
 - Verifica browser desktop/mobile ed end-to-end sul database reale dopo migrazione 006, incluse modifiche concorrenti dei due utenti.
-- Transazione unica per modifica piano e ricalcolo spesa: ora sono richieste successive e un errore di rete può lasciare la spesa da riallineare.
+- Migrazione `007_atomic_plan.sql` applicata dall'utente: salvataggio atomico di pasti e spesa, protezione generazione concorrente e conservazione spunte/ID degli ingredienti rimasti. Include un test dell'adapter RPC e verifiche SQL locali su rollback e aggregazione.
 - Filtri dieta strutturati e catalogo allergeni verificato: la ricerca testuale degli ingredienti non certifica assenza di allergeni né contaminazioni.
 - Ottimizzazione nutrizionale dell'intera giornata: ora si stimano porzioni per pasto e si confrontano le densità dei macro; non si garantisce un bilanciamento esatto.
 - Preferenze dei momenti del giorno condivise nel database: attualmente i toggle sono salvati sul dispositivo.

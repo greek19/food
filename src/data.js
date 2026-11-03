@@ -307,25 +307,35 @@ export function createFoodData({ auth }) {
     return result.data;
   }
 
-  async function savePlanItem(item, syncShopping = true) {
+  function planPayload(item) {
     if (!item.recipe_id || !Number.isFinite(Number(item.servings)) || Number(item.servings) <= 0) throw new Error("Scegli una ricetta e un numero di porzioni valido.");
-    if (!remote) { const store = readDemoStore(); const index = store.plan.findIndex((entry) => entry.id === item.id); index >= 0 ? store.plan.splice(index, 1, item) : store.plan.push(item); const previous = new Map((store.shopping ?? []).map((saved) => [saved.id, saved.checked])); store.shopping = makeShopping(store.plan, store.recipes).map((shopping) => ({ ...shopping, checked: previous.get(shopping.id) ?? false })); writeDemoStore(store); return item; }
+    return { recipe_id: item.recipe_id, day_of_week: item.day_of_week, meal_type: item.meal_type, servings: Number(item.servings), notes: item.notes ?? "" };
+  }
+
+  async function persistPlan(weekStart, items, generate = false) {
     const spaceId = await getSpaceId();
-    let plan = await client.from("meal_plans").select("id").eq("space_id", spaceId).eq("week_start", item.week_start).maybeSingle();
-    if (plan.error) throw plan.error;
-    if (!plan.data) {
-      const session = await auth.getSession();
-      plan = await client.from("meal_plans").insert({ space_id: spaceId, week_start: item.week_start, title: "Piano FOOD", created_by: session.user.id }).select("id").single();
-      if (plan.error) throw plan.error;
+    const result = await client.rpc("save_food_plan", {
+      p_space_id: spaceId, p_week_start: weekStart, p_items: items.map(planPayload), p_generate: generate,
+    });
+    if (result.error) {
+      if (result.error.code === "PGRST202") throw new Error("Aggiornamento del database necessario: applica la migrazione 007 prima di salvare il piano.");
+      throw result.error;
     }
-    const payload = { meal_plan_id: plan.data.id, recipe_id: item.recipe_id, day_of_week: item.day_of_week, meal_type: item.meal_type, servings: item.servings, notes: item.notes ?? "" };
-    const result = await client.from("meal_plan_items").upsert(payload, { onConflict: "meal_plan_id,day_of_week,meal_type" }).select().single();
-    if (result.error) throw result.error;
-    if (syncShopping) {
-      const loaded = await loadAll(item.week_start);
-      await persistRemoteShopping(loaded.plan, loaded.recipes, item.week_start);
+  }
+
+  async function savePlanItem(item) {
+    planPayload(item);
+    if (!remote) {
+      const store = readDemoStore();
+      const index = store.plan.findIndex((entry) => entry.week_start === item.week_start && entry.day_of_week === item.day_of_week && entry.meal_type === item.meal_type);
+      index >= 0 ? store.plan.splice(index, 1, item) : store.plan.push(item);
+      const previous = new Map((store.shopping ?? []).map((saved) => [saved.id, saved.checked]));
+      store.shopping = makeShopping(store.plan.filter((entry) => entry.week_start === item.week_start), store.recipes).map((shopping) => ({ ...shopping, checked: previous.get(shopping.id) ?? false }));
+      writeDemoStore(store);
+      return item;
     }
-    return result.data;
+    await persistPlan(item.week_start, [item]);
+    return item;
   }
 
   async function generatePlan(weekStart = mondayOf(), recipeList, people, meals = ["lunch", "dinner"]) {
@@ -334,25 +344,8 @@ export function createFoodData({ auth }) {
     if (existing.plan.length) throw new Error("Questa settimana ha già un piano. Modifica i singoli pasti.");
     const generated = buildPersonalPlan(recipeList, people, weekStart, meals);
     if (!remote) { const store = readDemoStore(); store.plan.push(...generated); store.shopping = makeShopping(generated, recipeList); writeDemoStore(store); return generated; }
-    for (const item of generated) await savePlanItem(item, false);
-    await persistRemoteShopping(generated, recipeList, weekStart);
+    await persistPlan(weekStart, generated, true);
     return generated;
-  }
-
-  async function persistRemoteShopping(plan, recipeList, weekStart) {
-    if (!remote) return;
-    const spaceId = await getSpaceId();
-    const planResult = await client.from("meal_plans").select("id").eq("space_id", spaceId).eq("week_start", weekStart).single();
-    if (planResult.error) throw planResult.error;
-    const previous = await client.from("shopping_items").select("ingredient_key,checked").eq("meal_plan_id", planResult.data.id);
-    if (previous.error) throw previous.error;
-    const checks = new Map(previous.data.map((item) => [item.ingredient_key, item.checked]));
-    const items = makeShopping(plan, recipeList).map(({ id: _demoId, ...item }) => ({ ...item, checked: checks.get(item.ingredient_key) ?? false, space_id: spaceId, meal_plan_id: planResult.data.id }));
-    const remove = await client.from("shopping_items").delete().eq("meal_plan_id", planResult.data.id);
-    if (remove.error) throw remove.error;
-    if (!items.length) return;
-    const insert = await client.from("shopping_items").insert(items);
-    if (insert.error) throw insert.error;
   }
 
   async function toggleShopping(itemId, checked) {
