@@ -174,7 +174,55 @@ function writeDemoStore(store) { localStorage.setItem(DEMO_STORE_KEY, JSON.strin
 
 function mapRecipe(row) {
   const mealTypes = recipeMealTypes(row);
-  return { ...row, meal_types: mealTypes, meal_type: row.meal_type ?? mealTypes[0], ingredients: Array.isArray(row.ingredients) ? row.ingredients : [], steps: Array.isArray(row.steps) ? row.steps : [], servings: row.servings ?? 2 };
+  return { ...row, meal_types: mealTypes, meal_type: row.meal_type ?? mealTypes[0], ingredients: Array.isArray(row.ingredients) ? row.ingredients : [], steps: Array.isArray(row.steps) ? row.steps : [], servings: row.servings ?? 2, fiber_g: row.fiber_g ?? 0 };
+}
+
+const allowedMealTypes = new Set(["breakfast", "lunch", "dinner", "snack"]);
+function asNumber(value, fallback = 0) { const parsed = Number(value); return Number.isFinite(parsed) ? parsed : fallback; }
+function asList(value) { return Array.isArray(value) ? value : typeof value === "string" ? value.split(/\r?\n|;/).map((item) => item.trim()).filter(Boolean) : []; }
+
+export function parseRecipeImport(text) {
+  const errors = [];
+  let records;
+  try {
+    const parsed = JSON.parse(text);
+    records = Array.isArray(parsed) ? parsed : parsed?.recipes;
+    if (!Array.isArray(records)) throw new Error("Il JSON deve essere un array o un oggetto con la proprietà recipes.");
+  } catch (error) {
+    return { recipes: [], errors: [error.message || "JSON non valido."] };
+  }
+  const recipes = records.map((record, index) => {
+    const rowNumber = index + 1;
+    if (!record || typeof record !== "object") { errors.push(`Riga ${rowNumber}: elemento non valido.`); return null; }
+    const title = String(record.title ?? "").trim();
+    const mealTypes = (Array.isArray(record.meal_types) ? record.meal_types : [record.meal_type ?? "dinner"]).map((item) => String(item).trim().toLowerCase()).filter(Boolean);
+    const invalidMealTypes = mealTypes.filter((item) => !allowedMealTypes.has(item));
+    if (!title) errors.push(`Riga ${rowNumber}: manca title.`);
+    if (!mealTypes.length || invalidMealTypes.length) errors.push(`Riga ${rowNumber}: meal_types non validi (${invalidMealTypes.join(", ") || "vuoti"}).`);
+    const servings = asNumber(record.servings, 0);
+    if (servings <= 0) errors.push(`Riga ${rowNumber}: servings deve essere maggiore di zero.`);
+    if (!title || !mealTypes.length || invalidMealTypes.length || servings <= 0) return null;
+    const ingredients = Array.isArray(record.ingredients) ? record.ingredients : [];
+    const steps = asList(record.steps);
+    return {
+      title,
+      description: String(record.description ?? "").trim(),
+      image_url: String(record.image_url ?? "").trim(),
+      meal_types: [...new Set(mealTypes)],
+      meal_type: mealTypes[0],
+      cuisine: String(record.cuisine ?? "").trim(),
+      prep_minutes: Math.max(0, Math.round(asNumber(record.prep_minutes, 0))),
+      calories: Math.max(0, Math.round(asNumber(record.calories, 0))),
+      protein_g: Math.max(0, asNumber(record.protein_g)),
+      carbs_g: Math.max(0, asNumber(record.carbs_g)),
+      fat_g: Math.max(0, asNumber(record.fat_g)),
+      fiber_g: Math.max(0, asNumber(record.fiber_g)),
+      servings,
+      ingredients,
+      steps,
+    };
+  }).filter(Boolean);
+  return { recipes, errors };
 }
 
 export function createFoodData({ auth }) {

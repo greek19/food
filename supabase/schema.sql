@@ -53,6 +53,7 @@ create table if not exists public.recipes (
   protein_g numeric(7,2) check (protein_g is null or protein_g >= 0),
   carbs_g numeric(7,2) check (carbs_g is null or carbs_g >= 0),
   fat_g numeric(7,2) check (fat_g is null or fat_g >= 0),
+  fiber_g numeric(7,2) not null default 0 check (fiber_g >= 0),
   ingredients jsonb not null default '[]'::jsonb,
   steps jsonb not null default '[]'::jsonb,
   created_at timestamptz not null default now(),

@@ -47,6 +47,7 @@ GitHub Pages previsto: [greek19.github.io/food](https://greek19.github.io/food/)
 - Aggiunta `supabase/migrations/003_authenticated_grants.sql` per i privilegi espliciti del ruolo `authenticated`; RLS resta attivo e vincolante.
 - Aggiunta `supabase/migrations/004_recipe_meal_types.sql`: una ricetta può appartenere a più momenti del giorno senza perdere il valore legacy `meal_type`.
 - Aggiunta modale di dettaglio ricetta con ingredienti, procedimento, valori, porzioni, tipi e foto; i contatori laterali Ricette/Spesa sono derivati dai dati correnti.
+- Aggiunte fibre per porzione con migrazione `005_recipe_fiber.sql` e importazione JSON multipla con template, drag-and-drop, anteprima, validazione e deduplicazione non distruttiva.
 
 ## Prossima fase suggerita
 

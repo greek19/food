@@ -173,6 +173,7 @@ button { cursor: pointer; }
 .modal-actions { display: flex; align-items: center; gap: 10px; }
 .modal-actions .modal-confirm { flex: 1; }
 .recipe-detail-modal { width: min(100%, 720px); max-height: min(90vh, 820px); overflow: auto; padding: 0; }
+.recipe-modal { width: min(100%, 820px); max-height: 90vh; overflow: auto; }
 .recipe-detail-image { min-height: 220px; background-size: cover; background-position: center; border-radius: 21px 21px 0 0; }
 .recipe-detail-content { padding: 26px 30px 30px; }
 .recipe-detail-content h2 { margin-bottom: 8px; }
@@ -189,11 +190,21 @@ button { cursor: pointer; }
 .delete-confirmation { margin-top: 18px; padding: 15px; border: 1px solid #f0d8cf; border-radius: 13px; background: #fff8f4; }
 .delete-confirmation strong { color: #8c5e4d; font-size: 12px; }
 .delete-confirmation p { color: #9b8177; font-size: 10px; margin: 6px 0 12px; }
+.recipe-import-modal { width: min(100%, 720px); max-height: 90vh; overflow: auto; }
+.import-copy { max-width: 600px; }
+.import-dropzone { display: grid; gap: 5px; place-items: center; border: 1px dashed #c8d5c4; border-radius: 13px; background: #f7faf5; padding: 18px; color: #779074; text-align: center; margin: 15px 0; position: relative; }
+.import-dropzone.is-dragging { border-color: #7fa078; background: #edf5e9; }
+.import-dropzone strong { font-size: 11px; }.import-dropzone span { color: #a0aaa0; font-size: 10px; }
+.import-dropzone input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.import-text-label { display: block; color: #7d897c; font-size: 10px; font-weight: 700; }.import-text-label textarea { display: block; width: 100%; margin-top: 8px; border: 1px solid #dfe6db; border-radius: 10px; padding: 12px; color: var(--ink); outline: 0; background: #fff; resize: vertical; font: 10px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; }.import-text-label textarea:focus { border-color: #9bb597; }
+.import-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0; }.import-actions > span { color: #9aa499; font-size: 10px; }
+.import-errors, .import-result { margin-top: 12px; padding: 12px; border-radius: 10px; background: #fff8f4; color: #8c5e4d; font-size: 10px; }.import-errors p, .import-result p { margin: 5px 0 0; }.import-result { background: #edf5e9; color: #557051; }.import-preview { margin: 15px 0; border-top: 1px solid #eef0eb; }.import-preview > strong { display: block; color: var(--green); font-size: 11px; padding: 12px 0 6px; }.import-preview > div { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid #f0f2ed; padding: 7px 0; color: #667365; font-size: 10px; }.import-preview small { color: #8da08a; }.import-preview .is-duplicate { color: #a76854; }.import-preview .is-duplicate small { color: #c07b67; }
+.filter-pill-import { color: #557051; border-color: #b9cdb4; background: #edf5e9; }
 .button-danger { background: #f8e3dc; color: #b46551; }
 .empty-state { padding: 25px 0; color: #9aa499; font-size: 11px; text-align: center; }
 .settings-copy { color: #778a75; font-size: 11px; line-height: 1.6; margin: 0 0 20px; }
 .settings-logout { margin-bottom: 16px; }
-@media (max-width: 540px) { .recipe-detail-content { padding: 22px 20px 24px; }.recipe-detail-columns { grid-template-columns: 1fr; gap: 18px; }.recipe-detail-image { min-height: 180px; } }
+@media (max-width: 540px) { .form-grid { grid-template-columns: 1fr; }.recipe-detail-content { padding: 22px 20px 24px; }.recipe-detail-columns { grid-template-columns: 1fr; gap: 18px; }.recipe-detail-image { min-height: 180px; } }
 .mobile-overlay { display: none; }
 @media (max-width: 820px) { .mobile-overlay { display: block; position: fixed; inset: 0; z-index: 15; border: 0; background: rgba(23,35,27,.16); } }
 .account-state { display: inline-flex; align-items: center; gap: 6px; color: #8f9a8f; font-size: 9px; font-weight: 700; }
