@@ -43,6 +43,7 @@ GitHub Pages previsto: [greek19.github.io/food](https://greek19.github.io/food/)
 - Lista della spesa aggregata per ingrediente, unità e reparto, con stato sincronizzabile.
 - Aggiunta [`supabase/migrations/002_food_core.sql`](supabase/migrations/002_food_core.sql) per tabelle, indici, colonna `recipes.servings` e policy RLS condivise.
 - Lint e build verificati dopo l'implementazione.
+- Normalizzazione difensiva dell'URL Supabase: eventuali suffissi `/rest/v1`, `/auth/v1` o `/storage/v1` vengono rimossi prima di creare il client.
 
 ## Prossima fase suggerita
 

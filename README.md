@@ -55,7 +55,7 @@ Per collegare localmente un progetto Supabase reale:
    ```
 
 4. Inserisci in `.env.local` i due valori pubblici di Supabase Project Settings → API:
-   - `VITE_SUPABASE_URL`: URL del progetto;
+   - `VITE_SUPABASE_URL`: origin del progetto, ad esempio `https://YOUR_PROJECT.supabase.co` (non aggiungere `/rest/v1`, `/auth/v1` o `/storage/v1`);
    - `VITE_SUPABASE_PUBLISHABLE_KEY`: Publishable key (oppure `VITE_SUPABASE_ANON_KEY` nei progetti che usano ancora quel nome).
 
    Vite carica automaticamente `.env.local`; il file non è versionato e non viene copiato in `dist/`.
